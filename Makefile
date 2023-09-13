@@ -19,4 +19,4 @@ bochs: all
 	bochs -q -f bochsrc
 
 qemu: all
-	qemu-system-x86_64 -fda hd.img
+	qemu-system-x86_64 -hda hd.img
