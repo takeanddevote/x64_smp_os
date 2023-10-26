@@ -1,6 +1,9 @@
+#include "linux/console.h"
+#include "linux/printk.h"
 
 int kernel_main()
 {
-    int a = 11;
-    while(1);
+    console_init();
+    printk("%s.\n", "hello world");
+    while(1); 
 }

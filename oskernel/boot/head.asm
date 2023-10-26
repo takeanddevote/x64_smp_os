@@ -5,6 +5,7 @@
 extern kernel_main ;声明C函数
 global kernel_start
 kernel_start:
+    xchg bx, bx
     mov eax, 0x99
     call kernel_main
     jmp $

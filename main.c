@@ -39,7 +39,25 @@ int interpreter(AST ast) {
     }
 }
 
+void vatest(char v0, char v1, short v2, int v3, long v4, char *v5)
+{
+    printf("%p\n%p\n%p\n%p\n%p\n%p.\n", &v0, &v1, &v2, &v3, &v4, &v5);
+}
+
 int main() {
+
+    printf("%d.\n", sizeof(int));
+    vatest(0, 1, 2, 3, 4, (char *)5);
+    return 1;
+    // char j = 0;
+    // int i = 0;
+    // for(;i > -100; i--, j--) {
+    //     printf("[%d %x] [%d %x]\n", i, i, j, j);
+    // }
+
+    char j = 0x80;
+    printf("%d %02x", j, j);
+
     while (1) {
         printf("calc> ");
         char input[MAX_INPUT];
