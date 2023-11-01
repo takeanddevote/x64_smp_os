@@ -1,6 +1,11 @@
 #ifndef __STDARG_H__
 #define __STDARG_H__
 
+#define DELIVER_TYPE_SIZE(s) ((s) < 4 ? 4 : (s))
+
+// #define MAX_4_OR_VALUE(x) ((x) < 4 ? 4 : (x))
+
+
 typedef char* va_list;
 
 /* 
@@ -12,7 +17,7 @@ typedef char* va_list;
 第一个参数的长度，可以根据格式化字符串来判断。根据格式化字符串中的%的个数即可递推所有参数以及参数的长度。
  */
 #define va_start(p, count) (p = (va_list)&count + sizeof(va_list))
-#define va_arg(p, t) (*(t*)(p += sizeof(va_list) - sizeof(va_list))) //p先指向下一个参数地址，然后再返回当前参数地址，再转为传入的t*指针类型，再取值
+#define va_arg(p, t) (*(t*)(p += DELIVER_TYPE_SIZE(sizeof(t)) - sizeof(va_list))) //p先指向下一个参数地址，然后再返回当前参数地址，再转为传入的t*指针类型，再取值
 #define va_end(p) (p = 0)
 
 #endif

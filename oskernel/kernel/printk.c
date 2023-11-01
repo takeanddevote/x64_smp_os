@@ -12,3 +12,13 @@ int printk(char *fmt, ...)
     console_write(buff, ret);
     return ret;
 }
+
+int print_mem(void *addr, int size, const char *str)
+{
+    unsigned char *pos = (unsigned char *)addr;
+    printk("%s [", str);
+    for(int i = 0; i < size; ++i) {
+        printk("%02x ", pos[i]);
+    }
+    printk("].\n");
+}

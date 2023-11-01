@@ -15,7 +15,7 @@ inc=-I./oskernel/include/
 
 #kernel目标文件
 kernel_obj = $(BUILD_DIR)/init/head.o $(BUILD_DIR)/init/main.o $(BUILD_DIR)/kernel/io.o $(BUILD_DIR)/kernel/console.o \
-	$(BUILD_DIR)/kernel/string.o $(BUILD_DIR)/kernel/printk.o $(BUILD_DIR)/kernel/vsprintf.o
+	$(BUILD_DIR)/kernel/string.o $(BUILD_DIR)/kernel/printk.o $(BUILD_DIR)/kernel/vsprintf.o $(BUILD_DIR)/kernel/gdt.o
 
 all: $(BUILD_DIR)/boot/boot.o $(BUILD_DIR)/boot/setup.o ${BUILD_DIR}/init/kernel.bin
 	$(shell rm -rf $(HD_IMG_NAME))
@@ -37,7 +37,8 @@ ${BUILD_DIR}/init/kernel.elf: ${kernel_obj}
 
 # 编译源文件
 #汇编文件编译成elf 32位的.o文件，用来和c编译成的elf 32位.o文件进行链接
-$(BUILD_DIR)/boot/head.o: oskernel/boot/head.asm
+$(BUILD_DIR)/init/head.o: oskernel/boot/head.asm
+	$(shell mkdir -p $(BUILD_DIR)/init)
 	nasm -f elf32 -g $< -o $@
 $(BUILD_DIR)/kernel/%.o: oskernel/kernel/asm/%.asm
 	$(shell mkdir -p $(BUILD_DIR)/kernel)
