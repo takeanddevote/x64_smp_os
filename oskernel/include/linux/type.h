@@ -11,6 +11,7 @@ typedef unsigned int u32;
 typedef int s32;
 typedef unsigned int size_t;
 
+typedef char bool;
 #define true    1
 #define false   0
 

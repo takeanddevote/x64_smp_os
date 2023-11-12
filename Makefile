@@ -15,7 +15,8 @@ inc=-I./oskernel/include/
 
 #kernel目标文件
 kernel_obj = $(BUILD_DIR)/init/main.o $(BUILD_DIR)/kernel/io.o $(BUILD_DIR)/kernel/head.o $(BUILD_DIR)/kernel/console.o \
-	$(BUILD_DIR)/kernel/string.o $(BUILD_DIR)/kernel/printk.o $(BUILD_DIR)/kernel/vsprintf.o $(BUILD_DIR)/kernel/gdt.o
+	$(BUILD_DIR)/kernel/string.o $(BUILD_DIR)/kernel/printk.o $(BUILD_DIR)/kernel/vsprintf.o $(BUILD_DIR)/kernel/gdt.o	\
+	$(BUILD_DIR)/kernel/idt.o $(BUILD_DIR)/kernel/int_isr.o $(BUILD_DIR)/kernel/keyboard.o
 
 all: $(BUILD_DIR)/boot/boot.o $(BUILD_DIR)/boot/setup.o ${BUILD_DIR}/init/kernel.bin
 	$(shell rm -rf $(HD_IMG_NAME))
@@ -25,7 +26,7 @@ all: $(BUILD_DIR)/boot/boot.o $(BUILD_DIR)/boot/setup.o ${BUILD_DIR}/init/kernel
 	@dd if=${BUILD_DIR}/init/kernel.bin of=hd.img bs=512 seek=3 count=50 conv=notrunc > /dev/null 2>&1
 	@echo "\nbuild "${HD_IMG_NAME}" success......"
 
-# 从elf文件取出纯机器码
+# 从elf文件取出纯机器码、提取符号生成map文件
 ${BUILD_DIR}/init/kernel.bin: ${BUILD_DIR}/init/kernel.elf
 	objcopy -O binary ${BUILD_DIR}/init/kernel.elf ${BUILD_DIR}/init/kernel.bin
 	nm ${BUILD_DIR}/init/kernel.elf | sort > ${BUILD_DIR}/init/kernel.map
