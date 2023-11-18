@@ -3,6 +3,10 @@
 [SECTION .data]
 KERNEL_ADDR equ 0x1200
 
+MEN_ARDS_NUM_ADDR equ 0x1100 ;保存ARDS的个数
+MEN_ARDS_ADDR equ 0x1102 ;保存N个ARDS
+
+
 [SECTION .gdt]
 CFG_CODE_SEG_LIMIT equ 0xfffff
 CFG_CODE_SEG_BASE equ 0x00
@@ -45,6 +49,36 @@ setup_start:
 
     mov si, print_jump_success
     call print_str
+    
+; 检测内存信息
+memoryCheck:
+    xor ebx, ebx ;ebx调用前设置为0，其他时候用来判断是否最后是一个ARDS
+    mov word [MEN_ARDS_NUM_ADDR], bx ;ARDS个数清零
+    mov edi, MEN_ARDS_ADDR ;设置ARDS的存储地址
+
+.loop:
+    mov eax, 0xe820 ;子功能号，固定0xe820
+    mov ecx, 20 ;调用者告诉bios写入的字节数；调用结束后ecx返回bios写入的字节数，一般都是20字节
+    mov edx, 0x534d4150 ;签名标记，校验用
+    int 0x15
+
+    jc .memoryCheckFail ;若CF置位，则调用出错
+
+    mov word ax, [MEN_ARDS_NUM_ADDR] ;ARDS个数增加1
+    inc ax
+    mov word [MEN_ARDS_NUM_ADDR], ax
+
+    add edi, ecx ;下一个ARDS的写入地址
+
+    cmp ebx, 0 ;ebx=0表示这是最后一个ARDS
+    jne .loop
+
+    jmp enter_protected_mode
+
+.memoryCheckFail:
+    mov si, print_memory_check_fail
+    call print_str
+    jmp $
 
 enter_protected_mode:
     cli ;关中断
@@ -187,3 +221,6 @@ print_jump_success:
 
 enter_protected_mode_sucess:
     db "enter protected mode.", 10, 13, 0
+
+print_memory_check_fail:
+    db "memory check fail.", 10, 13, 0
