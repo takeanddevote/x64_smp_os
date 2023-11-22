@@ -5,7 +5,7 @@
 #define BOCHS_DEBUG_BREAKPOINT  __asm__("xchg bx, bx");
 
 
-
+/* flag == 0 will cause exception */
 void assert(u32 flag);
 
 #endif 

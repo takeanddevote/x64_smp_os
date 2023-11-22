@@ -1,4 +1,6 @@
 #include "linux/type.h"
+#include "linux/printk.h"
+#include "linux/system.h"
 
 char *strcpy(char *dest, const char *src)
 {
