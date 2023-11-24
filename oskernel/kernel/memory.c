@@ -66,10 +66,7 @@ static int mm_manager_init()
     printk("mm map size: %d\n", g_mm_manager.phy_map_size);
     printk("mm map start: 0x%x\n", g_mm_manager.phy_map);
 
-    /* TODO: 这里有个bug，当phy_map从0开始时，qemu就会跑飞，
-     如果phy_map从0x7e00开始的时，都是正常的。
-     */
-    g_mm_manager.phy_map = 0x7e00;
+    g_mm_manager.phy_map = 0x9000; /* 内核在0x1200处，注意不要覆盖了 */
     memset(g_mm_manager.phy_map, 0, g_mm_manager.phy_map_size);
 }
 
