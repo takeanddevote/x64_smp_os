@@ -28,7 +28,7 @@ kernel_start:
     out 0xa1, al ;从8259A发送ICW4：x86模式、自动EOI
 
 .shield_interrupt:
-    mov al, 1111_1101b 
+    mov al, 1111_1100b 
     out 0x21, al ;主8259A发送OCW1：只接受键盘中断，即IRQ1
     mov al, 1111_1111b
     out 0xa1, al ;从8259A发送OCW1：屏蔽所有中断线

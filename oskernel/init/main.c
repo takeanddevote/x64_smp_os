@@ -5,6 +5,7 @@
 #include "linux/idt.h"
 #include "linux/memory.h"
 #include "linux/vm101012.h"
+#include "linux/clock.h"
 
 
 int kernel_main()
@@ -13,8 +14,9 @@ int kernel_main()
     printk("enter kernel main......\n");
     gdt_init();
     init_idt();
+    clock_init();
     mm_init();
-    vm101012_init(); 
+    vm101012_init();
 
     BOCHS_DEBUG_BREAKPOINT
     

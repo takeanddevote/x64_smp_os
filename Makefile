@@ -17,7 +17,7 @@ inc=-I./oskernel/include/
 kernel_obj = $(BUILD_DIR)/init/main.o $(BUILD_DIR)/kernel/io.o $(BUILD_DIR)/kernel/head.o $(BUILD_DIR)/kernel/console.o \
 	$(BUILD_DIR)/kernel/string.o $(BUILD_DIR)/kernel/printk.o $(BUILD_DIR)/kernel/vsprintf.o $(BUILD_DIR)/kernel/gdt.o	\
 	$(BUILD_DIR)/kernel/idt.o $(BUILD_DIR)/kernel/int_isr.o $(BUILD_DIR)/kernel/keyboard.o $(BUILD_DIR)/kernel/memory.o	\
-	$(BUILD_DIR)/kernel/vm101012.o $(BUILD_DIR)/kernel/malloc.o 
+	$(BUILD_DIR)/kernel/vm101012.o $(BUILD_DIR)/kernel/malloc.o $(BUILD_DIR)/kernel/clock.o
 	
 all: $(BUILD_DIR)/boot/boot.o $(BUILD_DIR)/boot/setup.o ${BUILD_DIR}/init/kernel.bin
 	$(shell rm -rf $(HD_IMG_NAME))

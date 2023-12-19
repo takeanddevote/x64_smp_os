@@ -3,6 +3,7 @@
 extern void interrupt_handle();
 extern void key_board_handle();
 extern void assert_handle();
+extern void clock_handle();
 
 static idt_interrupt_desciptor g_idt_table[255]; //中断最多255个
 static idtr_value g_idtr = {
@@ -18,6 +19,7 @@ int init_idt()
         u32 handle = (u32)interrupt_handle;
 
         switch(i) {
+            case 0x20: handle = (u32)clock_handle; break;
             case 0x21: handle = (u32)key_board_handle; break;
             case 0x81: handle = (u32)assert_handle; break;
             default: break;

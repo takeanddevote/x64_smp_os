@@ -3,11 +3,13 @@
 
 extern printk
 extern keymap_handler
+extern clock_hander
 
 
 global key_board_handle
 global interrupt_handle
 global assert_handle
+global clock_handle
 
 
 
@@ -41,6 +43,15 @@ interrupt_handle:
     iret
 
 
+clock_handle:
+    push degbug_clock_handle
+    call printk
+    add esp, 4
+
+    call clock_hander
+
+    iret
+
 global assert
 assert:
     mov eax, [esp+4]
@@ -57,7 +68,8 @@ assert:
 
 
 
-
+degbug_clock_handle:
+    db "degbug_clock_handle..", 10, 13, 0
 degbug_handle:
     db "interrupt_handle..", 10, 13, 0
 degbug_keyboard_handle:
