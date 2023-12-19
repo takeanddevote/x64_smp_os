@@ -3,7 +3,7 @@
 #include "linux/memory.h"
 #include "lib/string.h"
 
-
+ 
 
 int vm101012_init()
 {
@@ -19,10 +19,10 @@ int vm101012_init()
         u32 pa = i*PAGE_SIZE;
         *pte = 0x07 | pa;
     }
-    //因为物理内存管理模块是从1M开始的，而内核占用0-4M，因此需要把1-4M的分配给内核。
-    for(int i = 0; i < 766; ++i) { //一页4KB，1M=256页， 3M=768页, 再减去上面分配的两个页=766页
-        get_free_page();
-    }
+    // //因为物理内存管理模块是从1M开始的，而内核占用0-4M，因此需要把1-4M的分配给内核。
+    // for(int i = 0; i < 766; ++i) { //一页4KB，1M=256页， 3M=768页, 再减去上面分配的两个页=766页
+    //     get_free_page();
+    // }
 
     pdt[0] = 0x07 | (u32)ptt;
     asm volatile("mov cr3, eax;" ::"a"((u32)pdt)); //设置CR3，需要在特权级r0设置

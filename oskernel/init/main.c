@@ -17,6 +17,24 @@ int kernel_main()
     vm101012_init(); 
 
     BOCHS_DEBUG_BREAKPOINT
+    
+    void *ptr1 = kmalloc(100);
+    void *ptr2 = kmalloc(100);
+    void *ptr3 = kmalloc(100);
+    void *ptr4 = kmalloc(129);
+    printk("ptr1 = %p.\n", ptr1);
+    printk("ptr2 = %p.\n", ptr2);
+    printk("ptr3 = %p.\n", ptr3);
+    printk("ptr4 = %p.\n", ptr4);
+
+    kfree_s(ptr2, 100);
+    ptr2 = kmalloc(100);
+    printk("ptr2 = %p.\n", ptr2);
+
+    kfree_s(ptr4, 129);
+    ptr4 = kmalloc(129);
+    printk("ptr4 = %p.\n", ptr4);
+
 
     while(1); 
 }

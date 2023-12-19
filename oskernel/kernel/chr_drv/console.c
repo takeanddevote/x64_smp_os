@@ -58,7 +58,7 @@ void console_clear()
     set_screen();
 
     u16 *ptr = (u16 *)MEM_BASE;
-    while (ptr < MEM_END)
+    while ((u32)ptr < MEM_END)
     {
         *ptr++ = 0x0720;
     }
@@ -79,7 +79,7 @@ static void scroll_up()
     }
     else
     {
-        memcpy(MEM_BASE, screen, SCR_SIZE);
+        memcpy((void *)MEM_BASE, (const void *)screen, SCR_SIZE);
         pos -= (screen - MEM_BASE);
         screen = MEM_BASE;
     }

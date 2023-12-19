@@ -28,7 +28,7 @@ int gdt_init()
     /* 新增段描述符 */
 
 
-    g_gdtr.gdt_base_addr = g_gdt;
+    g_gdtr.gdt_base_addr = (u32)g_gdt;
     g_gdtr.gdt_max_offset = g_gdtr.gdt_max_offset;
 
     __asm__ volatile("lgdt g_gdtr;");

@@ -6,6 +6,7 @@
  *  致学员：该文件的代码摘自linux内核，会用就行，不用深究
  */
 #include "linux/printk.h"
+#include "lib/string.h"
 
 /* we use this so that we can do without the ctype library */
 #define is_digit(c)	((c) >= '0' && (c) <= '9')

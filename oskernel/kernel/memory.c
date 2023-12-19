@@ -41,7 +41,7 @@ void *get_free_page()
     void *ret = NULL;
     for(u32 i = 0; i < g_mm_manager.phy_map_size; ++i) {
         if(!g_mm_manager.phy_map[i]) {
-            ret = g_mm_manager.phy_base + i*PAGE_SIZE;
+            ret = (void *)(g_mm_manager.phy_base + i*PAGE_SIZE);
             g_mm_manager.phy_map[i] = 1;
             g_mm_manager.phy_pages_used += 1;
             break;
@@ -60,13 +60,14 @@ void free_page(void *ptr)
 
 static int mm_manager_init()
 {
+    g_mm_manager.phy_map = (u8 *)0x9000; /* 内核在0x1200处，注意不要覆盖了 */
+    
     printk("mm physical start: 0x%x\n", g_mm_manager.phy_base);
     printk("mm physical size: %dM\n", (g_mm_manager.phy_pages*4*1024) / (1024*1024));
     printk("mm pages used: %d\n", g_mm_manager.phy_pages_used);
     printk("mm map size: %d\n", g_mm_manager.phy_map_size);
     printk("mm map start: 0x%x\n", g_mm_manager.phy_map);
 
-    g_mm_manager.phy_map = 0x9000; /* 内核在0x1200处，注意不要覆盖了 */
     memset(g_mm_manager.phy_map, 0, g_mm_manager.phy_map_size);
 }
 

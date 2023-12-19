@@ -5,7 +5,7 @@
 #ifndef ZIYA_OSKERNEL_TEACH_STRING_H
 #define ZIYA_OSKERNEL_TEACH_STRING_H
 
-// #include "asm/system.h"
+#include "linux/type.h"
 
 char* strcpy(char* dest, const char* src);
 char* strcat(char* dest, const char* src);

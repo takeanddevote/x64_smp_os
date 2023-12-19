@@ -36,7 +36,7 @@ int init_idt()
 
     //设置IDTR
     g_idtr.idt_max_offset = sizeof(g_idt_table) / sizeof(idt_interrupt_desciptor) * 8 - 1;
-    g_idtr.idt_base_addr = g_idt_table;
+    g_idtr.idt_base_addr = (u32)g_idt_table;
     __asm__ volatile ("lidt g_idtr;");
 
     __asm__("sti;"); //启用中断，置位eflags的IF-[9]
