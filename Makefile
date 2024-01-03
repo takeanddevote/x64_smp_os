@@ -51,18 +51,18 @@ $(BUILD_DIR)/boot/%.o: oskernel/boot/%.asm
 #把C源文件编译成elf 32位的.o文件
 $(BUILD_DIR)/init/%.o: oskernel/init/%.c
 	$(shell mkdir -p $(BUILD_DIR)/init)
-	gcc ${CFLAGS} ${inc} -c $< -o $@
+	gcc ${CFLAGS} -g ${inc} -c $< -o $@
 $(BUILD_DIR)/kernel/%.o: oskernel/kernel/chr_drv/%.c
 	$(shell mkdir -p $(BUILD_DIR)/kernel)
-	gcc ${CFLAGS} ${inc} -c $< -o $@
+	gcc ${CFLAGS} -g ${inc} -c $< -o $@
 $(BUILD_DIR)/kernel/%.o: oskernel/kernel/mm/%.c
 	$(shell mkdir -p $(BUILD_DIR)/kernel)
-	gcc ${CFLAGS} ${inc} -c $< -o $@
+	gcc ${CFLAGS} -g ${inc} -c $< -o $@
 $(BUILD_DIR)/kernel/%.o: oskernel/kernel/%.c
-	gcc ${CFLAGS} ${inc} -c $< -o $@
+	gcc ${CFLAGS} -g ${inc} -c $< -o $@
 $(BUILD_DIR)/kernel/%.o: oskernel/lib/%.c
 	$(shell mkdir -p $(BUILD_DIR)/lib)
-	gcc ${CFLAGS} ${inc} -c $< -o $@
+	gcc ${CFLAGS} -g ${inc} -c $< -o $@
 
 clean:
 	$(shell rm -r $(BUILD_DIR))
@@ -73,3 +73,10 @@ bochs: all
 
 qemu: all
 	qemu-system-i386 -m 32M -boot c -hda hd.img
+
+gdbqemu: all
+	qemu-system-i386 \
+    	-m 32M \
+    	-boot c \
+    	-hda hd.img \
+    	-s -S -nographic
