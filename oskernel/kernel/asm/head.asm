@@ -1,5 +1,5 @@
 [SECTION .text]
-; [ORG 0x1200] ;nasm编译使用elf或者elf32时，需要在链接器指定链接地址
+; [ORG 0x1200] ;因为是要编译为可重定位文件，因此链接地址是链接阶段指定的
 [BITS 32]
 
 extern kernel_main ;声明C函数

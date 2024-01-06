@@ -5,7 +5,7 @@
 
 
 void *kmalloc(size_t len);
-void kfree(void *ptr, size_t len);
+void kfree_s(void *ptr, size_t len);
 
 
 

@@ -43,14 +43,26 @@ interrupt_handle:
     iret
 
 
+
+extern sched
+extern CURRENT
 clock_handle:
-    push degbug_clock_handle
-    call printk
-    add esp, 4
+    ; push degbug_clock_handle
+    ; call printk
+    ; add esp, 4
 
+    push eax
+    mov eax, [CURRENT]
+    cmp eax, 0
+    je .fisrt_into_tasks
+
+.fisrt_into_tasks: ;内核第一次进入任务切换，因此不需要保存上个任务的现场。
+    pop eax
+
+.deal_hander:
     call clock_hander
-
-    iret
+    call sched
+    iret ;如果还没进入任务切换，那么就还需要返回内核裸机态，因此需要保持栈平衡。
 
 global assert
 assert:
