@@ -15,11 +15,13 @@ task_t *CURRENT = NULL;
 3、时钟ISR检查是否第一次进入任务切换（CURRET==0？），如果是，则不需要保存现场（内核现场），直接执行调度sched即可
 4、sched中取出要调度任务描述符，并赋值给CURRET，然后调用汇编函数switch_task执行任务切换。
 5、switch_task直接恢复现场即可。
-6、
  */
 void sched(void)
 {
     task_t *next = get_next_ready_task();
-    CURRENT = next;
+    if(next) //如果没有ready任务，即不需要切换任务或者说切换回当前任务。
+        CURRENT = next;
+
+    CURRENT->state = TASK_RUNNING;
     sched_task();
 }

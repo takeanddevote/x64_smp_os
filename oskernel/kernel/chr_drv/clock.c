@@ -25,5 +25,5 @@ void clock_init() {
 void clock_hander()
 {
     cpu_tickes++;
-    printk("cpu_tickes %d.\n", cpu_tickes);
+    // printk("cpu_tickes %d.\n", cpu_tickes);
 }

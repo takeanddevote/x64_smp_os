@@ -56,6 +56,30 @@ clock_handle:
     cmp eax, 0
     je .fisrt_into_tasks
 
+.save_task_scene:;保存任务现场
+
+    mov [eax+4*11], ebx
+    mov [eax+4*12], ecx
+    mov [eax+4*13], edx
+    mov [eax+4*15], ebp
+    mov [eax+4*16], esi
+    mov [eax+4*17], edi
+
+    mov ecx, eax ;保存eax
+    pop eax
+    mov [ecx+4*10], eax
+
+    mov eax, [esp] ;保存eip
+    mov [ecx+4*8], eax
+
+    mov eax, [esp+8] ;保存eflags
+    mov [ecx+4*9], eax
+
+    mov eax, esp
+    add eax, 12
+    mov [ecx+4*14], eax ;保存esp，因为中断push了eflags、cs、eip
+    jmp .deal_hander
+
 .fisrt_into_tasks: ;内核第一次进入任务切换，因此不需要保存上个任务的现场。
     pop eax
 

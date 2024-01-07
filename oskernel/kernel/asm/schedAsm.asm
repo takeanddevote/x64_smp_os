@@ -32,11 +32,35 @@ sched_task:
     push eax ;设置ret的返回地址，设为函数地址即可实现调用任务函数。这里有个细节，push会导致esp变化，而ret会pop，所以前后任务栈不变。
     jmp .siwtch
 
-.task_not_fist_sched:   ;不是第一次调度，则回复现场
+.task_not_fist_sched:   ;不是第一次调度，则恢复任务现场
+    mov eax, [CURRENT]
 
+    mov ebx, [eax+4*11]
+    mov ecx, [eax+4*12]
+    mov edx, [eax+4*13]
+    mov esp, [eax+4*14]
+    mov ebp, [eax+4*15]
+    mov esi, [eax+4*16]
+    mov edi, [eax+4*17]
+
+    push ecx ;先保存ecx
+
+    mov ecx, [eax+4*9] ;恢复eflags，此时eflags是关闭中断标志位状态
+    push ecx
+    popf ;从栈中恢复值到eflags中
+
+    mov ecx, [eax+4*10]
+    mov [esp-4], ecx ;先把eax的值放到栈中
+    
+    pop ecx;恢复ecx，此时eax在[esp-4]处，并且此时esp和恢复现场的一致。
+
+    mov eax, [eax+4*8]
+    push eax ;压栈eip返回地址，配合ret实现任务切换
+
+    mov eax, [esp-8] ;恢复eax
 
 .siwtch:
-    ; sti ;开启中断
+    sti ;开启中断
     ret
 
 

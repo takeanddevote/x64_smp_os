@@ -27,7 +27,7 @@ if $has_k_option == "true"; then
 elif $has_s_option == "true"; then
     make clean; make gdbqemu
 else
-    gdb -ex "target remote localhost:1234" -ex "b kernel_main" -ex "c" build/init/kernel.elf
+    gdb -ex "target remote localhost:1234" -ex "b kernel_start" -ex "c" build/init/kernel.elf
 fi
 
 

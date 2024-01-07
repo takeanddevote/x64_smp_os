@@ -29,9 +29,9 @@ typedef struct tss_t {
     u32 eip;    //8
     u32 flags;  //9
     u32 eax;    //10
-    u32 ecx;    //11
-    u32 edx;    //12
-    u32 ebx;    //13
+    u32 ebx;    //11
+    u32 ecx;    //12
+    u32 edx;    //13
     u32 esp;    //14
     u32 ebp;    //15
     u32 esi;    //16

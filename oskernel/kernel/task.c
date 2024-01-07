@@ -3,6 +3,7 @@
 #include "linux/mm.h"
 #include "linux/memory.h"
 #include "lib/string.h"
+#include "linux/delay.h"
 
 
 
@@ -82,8 +83,12 @@ task_t *task_create(const char *name, task_fn func, size_t stackSize)
 
 static void idle_func()
 {
+    static unsigned int cout = 0;
     printk("enter idle task....\n");
     while(1) {
+        delay_ms(2);
+        printk("i am idle task, cycle times %d ...\n", cout);
+        cout++;
     }
 }
 
@@ -99,7 +104,10 @@ void init_task()
 
 int get_first_sched_flag(task_t *task)
 {
-    return task->fist_sched;
+    if(task->fist_sched == 0)
+        return 0;
+    task->fist_sched = 0;
+    return 1;
 }
 
 void construct_task_initial_scene(task_t *task)
