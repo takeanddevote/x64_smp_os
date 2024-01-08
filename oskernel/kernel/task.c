@@ -81,14 +81,15 @@ task_t *task_create(const char *name, task_fn func, size_t stackSize)
     return newTask;
 }
 
+extern void construct_test_scene();
 static void idle_func()
 {
     static unsigned int cout = 0;
     printk("enter idle task....\n");
     while(1) {
-        delay_ms(2);
-        printk("i am idle task, cycle times %d ...\n", cout);
-        cout++;
+    delay_ms(2);
+    printk("i am idle task, cycle times %d ...\n", cout);
+    cout++;
     }
 }
 

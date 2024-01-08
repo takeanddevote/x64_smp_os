@@ -45,7 +45,9 @@ sched_task:
 
     push ecx ;先保存ecx
 
-    mov ecx, [eax+4*9] ;恢复eflags，此时eflags是关闭中断标志位状态
+    mov ecx, [eax+4*9] ;恢复eflags。
+    ;注意保存的eflags的IF位是开启的，因此要清除IF位再恢复，不然在恢复现场就会发生中断，导致程序奔溃。
+    and ecx, 0b11111111_11111111_11111101_11111111 
     push ecx
     popf ;从栈中恢复值到eflags中
 
@@ -57,11 +59,22 @@ sched_task:
     mov eax, [eax+4*8]
     push eax ;压栈eip返回地址，配合ret实现任务切换
 
-    mov eax, [esp-8] ;恢复eax
+    mov eax, [esp-4] ;恢复eax
 
 .siwtch:
     sti ;开启中断
     ret
 
 
-; .switch_task:
+global construct_test_scene
+construct_test_scene: ;构造一个固定的寄存器现场来测试保护现场和恢复现场
+    mov eax, 0x01
+    mov ecx, 0x02
+    mov edx, 0x03
+    mov ebx, 0x04
+    ; mov esp, 0x1
+    mov ebp, esp
+    mov esi, 0x05
+    mov edi, 0x06
+
+    jmp $
