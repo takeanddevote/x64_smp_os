@@ -66,6 +66,7 @@ typedef struct {
 void init_task();
 task_t *task_create(const char *name, task_fn func, size_t stackSize);
 int get_first_sched_flag(task_t *task);
+void set_task_ready(task_t *task);
 
 
 #endif

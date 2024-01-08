@@ -87,15 +87,27 @@ static void idle_func()
     static unsigned int cout = 0;
     printk("enter idle task....\n");
     while(1) {
-    delay_ms(2);
-    printk("i am idle task, cycle times %d ...\n", cout);
-    cout++;
+        delay_ms(1000);
+        printk("i am idle task, cycle times %d ...\n", cout);
+        cout++;
+    }
+}
+
+static void kernel_func()
+{
+    static unsigned int cout = 0;
+    printk("enter kernel task....\n");
+    while(1) {
+        delay_ms(1000);
+        printk("i am kernel task, cycle times %d ...\n", cout);
+        cout++;
     }
 }
 
 static void create_idle()
 {
     task_create("idle", idle_func, 2048);
+    task_create("kernel task", kernel_func, 2048);
 }
 
 void init_task()
@@ -109,6 +121,11 @@ int get_first_sched_flag(task_t *task)
         return 0;
     task->fist_sched = 0;
     return 1;
+}
+
+void set_task_ready(task_t *task)
+{
+    task->state = TASK_READY;
 }
 
 void construct_task_initial_scene(task_t *task)

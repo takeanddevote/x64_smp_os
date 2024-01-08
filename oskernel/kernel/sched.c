@@ -19,9 +19,13 @@ task_t *CURRENT = NULL;
 void sched(void)
 {
     task_t *next = get_next_ready_task();
-    if(next) //如果没有ready任务，即不需要切换任务或者说切换回当前任务。
-        CURRENT = next;
+    
+    if(CURRENT)
+        set_task_ready(CURRENT);
 
+    if(next) { //如果没有ready任务，即不需要切换任务或者说切换回当前任务。
+        CURRENT = next;
+    }
     CURRENT->state = TASK_RUNNING;
     sched_task();
 }
