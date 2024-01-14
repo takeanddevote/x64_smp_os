@@ -17,6 +17,9 @@
     如果线程是第一次调度，那就不需要恢复现场，而是构造一个初始现场给这个线程。初始化现场包括：任务栈、任务函数设为返回地址（当前中断结束后）、
     任务退出返回地址。
  */
+extern task_t *CURRENT;
+extern void sched_task(void);
+
 task_t *g_tasks[TASK_MAX_NUMS];
 
 static int get_free_task_index()
@@ -88,19 +91,30 @@ static void idle_func()
     printk("enter idle task....\n");
     while(1) {
         delay_ms(1000);
-        printk("i am idle task, cycle times %d ...\n", cout);
+        printk("*******idle task, cycle times %d ...\n", cout);
         cout++;
     }
 }
 
 static void kernel_func()
 {
-    static unsigned int cout = 0;
+    static unsigned int cout = 2;
     printk("enter kernel task....\n");
-    while(1) {
+    while(cout) {
         delay_ms(1000);
-        printk("i am kernel task, cycle times %d ...\n", cout);
-        cout++;
+        printk("-------kernel task, cycle times %d ...\n", cout);
+        cout--;
+    }
+}
+
+static void user_func()
+{
+    static unsigned int cout = 3;
+    printk("enter user task....\n");
+    while(cout) {
+        delay_ms(1000);
+        printk("#######user task, cycle times %d ...\n", cout);
+        cout--;
     }
 }
 
@@ -108,6 +122,7 @@ static void create_idle()
 {
     task_create("idle", idle_func, 2048);
     task_create("kernel task", kernel_func, 2048);
+    task_create("user task", user_func, 2048);
 }
 
 void init_task()
@@ -128,12 +143,14 @@ void set_task_ready(task_t *task)
     task->state = TASK_READY;
 }
 
-void construct_task_initial_scene(task_t *task)
+void task_exit(task_t *task)
 {
-    /* 初始化现场包括：任务栈、任务函数设为返回地址（当前中断结束后）、任务退出返回地址。*/
-    /* 任务退出返回地址如何理解？实际就是构造一个类似call的栈环境，即call 任务函数，当任务函数结束时，
-        就相当于正常的call调用函数的返回一样。 */
+    g_tasks[task->pid] = NULL;
 
-    task->fist_sched = 0;
-
+    kfree_s(task->stack, task->stackSize);
+    kfree_s(task, sizeof(task_t));
+    //清理当前任务后，我们需要把CURENT切换到下一个待调度任务，并主动调度
+    CURRENT = get_next_ready_task();
+    CURRENT->state = TASK_RUNNING;
+    sched_task();
 }

@@ -147,7 +147,6 @@ void kfree_s(void *ptr, size_t len)
 
     /* 桶没有被申请内存块，释放该桶的页空间，并把桶放进空闲桶链 */
     if(!chain->refCnt) {
-        debugsit
         free_page(chain->page);
         dirPos->chain = chain->next;
 

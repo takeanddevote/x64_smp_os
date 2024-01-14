@@ -4,8 +4,8 @@
 
 [SECTION .text]
 
+extern task_exit
 extern get_first_sched_flag
-extern construct_task_initial_scene
 extern CURRENT
 global sched_task
 sched_task:
@@ -28,6 +28,8 @@ sched_task:
 .task_fist_sched:
     ;任务第一次调度
     mov esp, [ecx+14*4] ;切换到任务自己的栈
+    mov eax, .task_exit ;先压栈任务退出处理函数
+    push eax
     mov eax, [ecx+8*4]
     push eax ;设置ret的返回地址，设为函数地址即可实现调用任务函数。这里有个细节，push会导致esp变化，而ret会pop，所以前后任务栈不变。
     jmp .siwtch
@@ -64,6 +66,15 @@ sched_task:
 .siwtch:
     sti ;开启中断
     ret
+
+.task_exit:
+    cli ;任务退出后中断处于开启状态，需要关闭确保不被打断。
+    mov eax, [CURRENT]
+    push eax
+    call task_exit
+
+    jmp $ ;不应该运行到这
+
 
 
 global construct_test_scene
