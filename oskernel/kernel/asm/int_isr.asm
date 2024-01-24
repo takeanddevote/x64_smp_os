@@ -43,7 +43,7 @@ interrupt_handle:
     iret
 
 
-
+extern sub_task_counter
 extern sched
 extern CURRENT
 clock_handle:
@@ -54,7 +54,22 @@ clock_handle:
     push eax
     mov eax, [CURRENT]
     cmp eax, 0
-    je .fisrt_into_tasks
+    je .fisrt_into_tasks    ;第一次进入任务调度
+
+    ;任务的时间片还没执行完，因此不需要进行任务切换，也不需要保存现场，但不能破坏现场，就像普通的一次中断过程。
+    push eax
+    call sub_task_counter
+    cmp eax, 1
+    je .task_couter_zero
+
+    ;任务的时间片还没执行完
+    add esp, 4
+    pop eax
+    iret    ;返回到当前任务中断处，继续执行当前任务
+
+
+.task_couter_zero: ;时间片执行完了，需要调度到下一个高优先级就绪任务
+    pop eax
 
 .save_task_scene:;保存任务现场
 

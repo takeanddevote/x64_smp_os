@@ -2,7 +2,7 @@
 #define __TASK_H__
 #include "linux/type.h"
 
-#define TASK_MAX_NUMS 64
+#define TASK_MAX_NUMS 4
 
 typedef void (*task_fn)(void);
 
@@ -61,10 +61,12 @@ typedef struct {
     void *stack;
     int stackSize;
     int fist_sched;
+    size_t priority;    //任务优先级
+    size_t counter;     //任务时间片，每调度一次递减直到0
 } task_t;
 
 void init_task();
-task_t *task_create(const char *name, task_fn func, size_t stackSize);
+task_t *task_create(const char *name, task_fn func, size_t stackSize, size_t priority);
 int get_first_sched_flag(task_t *task);
 void set_task_ready(task_t *task);
 

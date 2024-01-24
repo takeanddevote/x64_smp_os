@@ -33,17 +33,50 @@ static int get_free_task_index()
 
 task_t *get_next_ready_task()
 {
-    for(int i = 0; i < TASK_MAX_NUMS; ++i) {
+    const task_t *highPrioTask = NULL;
+    bool notJustIdle = false; //除了idle还有其它任务
+
+    for(int i = 1; i < TASK_MAX_NUMS; ++i) {
         if(!g_tasks[i])
             continue;
-        if(g_tasks[i]->state == TASK_READY)
-            return g_tasks[i];
-
+        notJustIdle = true;
+        if(g_tasks[i]->state == TASK_READY) { //找到ready的任务
+            if(!highPrioTask) { //第一个ready任务
+                if(g_tasks[i]->counter)    //时间片为0说明该任务已经执行完自己的时间片了。
+                    highPrioTask = g_tasks[i];
+                continue;
+            }
+            
+            if((g_tasks[i]->priority > highPrioTask->priority) && g_tasks[i]->counter) {   //比上个任务的优先级高，并且时间片不为0
+                highPrioTask = g_tasks[i];
+            }
+        }
     }
-    return NULL;
+
+    if(!highPrioTask ) {
+        if(notJustIdle) { //除了idle还有其它任务，但是这些任务的时间片都执行完了，重置所有任务的时间片，并调度优先级最高的任务。
+            for(int i = 1; i < TASK_MAX_NUMS; ++i) {
+                if(!g_tasks[i])
+                    continue;
+                g_tasks[i]->counter = g_tasks[i]->priority; //重置时间片
+                if(!highPrioTask) {
+                    highPrioTask = g_tasks[i];
+                    continue;
+                }
+
+                if(g_tasks[i]->priority > highPrioTask->priority) {   //比上个任务的优先级高
+                    highPrioTask = g_tasks[i];
+                }
+            }
+        } else { //只有idle任务
+            highPrioTask = g_tasks[0];
+        }
+    }
+
+    return highPrioTask;
 }
 
-task_t *task_create(const char *name, task_fn func, size_t stackSize)
+task_t *task_create(const char *name, task_fn func, size_t stackSize, size_t priority)
 {
     int pid = get_free_task_index(); //获取空闲的任务id
     if(pid < 0) {
@@ -77,6 +110,9 @@ task_t *task_create(const char *name, task_fn func, size_t stackSize)
     //构造一个初始现场
     newTask->context.esp = ((u32)newTask->stack + stackSize - 1); //满减栈
     newTask->context.eip = (u32)func;
+
+    newTask->counter = priority;
+    newTask->priority = priority; //时间片和优先级值相等
 
     newTask->state = TASK_READY;
     g_tasks[pid] = newTask;
@@ -120,9 +156,9 @@ static void user_func()
 
 static void create_idle()
 {
-    task_create("idle", idle_func, 2048);
-    task_create("kernel task", kernel_func, 2048);
-    task_create("user task", user_func, 2048);
+    task_create("idle", idle_func, 2048, 1);
+    task_create("kernel task", kernel_func, 2048, 3);
+    task_create("user task", user_func, 2048, 2);
 }
 
 void init_task()
@@ -145,6 +181,7 @@ void set_task_ready(task_t *task)
 
 void task_exit(task_t *task)
 {
+    printk("<<<<<< exit task: %s.\n", task->name);
     g_tasks[task->pid] = NULL;
 
     kfree_s(task->stack, task->stackSize);
@@ -153,4 +190,14 @@ void task_exit(task_t *task)
     CURRENT = get_next_ready_task();
     CURRENT->state = TASK_RUNNING;
     sched_task();
+}
+
+int sub_task_counter(task_t *task)
+{
+    // printk("Current task %s ", task->name);
+    // printk("couter %d.\n ", task->counter);
+    if(!task->counter) //任务时间片已执行完，需要调度下一个任务
+        return 1;
+    task->counter--;
+    return 0;
 }
