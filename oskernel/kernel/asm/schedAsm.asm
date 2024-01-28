@@ -4,6 +4,7 @@
 
 [SECTION .text]
 
+extern sched
 extern task_exit
 extern get_first_sched_flag
 extern CURRENT
@@ -89,3 +90,41 @@ construct_test_scene: ;构造一个固定的寄存器现场来测试保护现场
     mov edi, 0x06
 
     jmp $
+
+extern sched_by_sleep
+global task_deal_sleep
+task_deal_sleep:
+    push eax
+    mov eax, [CURRENT]
+    
+.save_task_scene:;保存任务现场
+    mov [eax+4*11], ebx
+    mov [eax+4*12], ecx
+    mov [eax+4*13], edx
+    mov [eax+4*15], ebp
+    mov [eax+4*16], esi
+    mov [eax+4*17], edi
+
+    mov ecx, eax ;保存eax
+    pop eax
+    mov [ecx+4*10], eax
+
+    mov eax, .wakup_return ;eip要设置为.wakup_return
+    mov [ecx+4*8], eax
+
+    pushf ;先把eflags压栈
+    mov eax, [esp] ;读取eflags
+    mov [ecx+4*9], eax
+    add esp, 4 ;恢复栈平衡
+
+    mov eax, esp
+    mov [ecx+4*14], eax ;保存esp，上面已经栈平衡了，直接保存
+
+
+    call sched_by_sleep ;主动发起调度
+
+.wakup_return:
+    ;因为是先关闭中断，再保存现场，任务描述符里的eflags的中断是关闭的，因此当睡眠任务被唤醒后，中断是关闭状态，因此要主动打开中断。
+    sti
+    ret
+

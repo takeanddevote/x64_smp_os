@@ -70,5 +70,7 @@ task_t *task_create(const char *name, task_fn func, size_t stackSize, size_t pri
 int get_first_sched_flag(task_t *task);
 void set_task_ready(task_t *task);
 
+void task_sleep(int ms);
+void task_wakeup();
 
 #endif

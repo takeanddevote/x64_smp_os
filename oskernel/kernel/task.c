@@ -18,7 +18,11 @@
     任务退出返回地址。
  */
 extern task_t *CURRENT;
+extern int jiffy;
+extern int cpu_tickes;
+
 extern void sched_task(void);
+extern void task_deal_sleep(void);
 
 task_t *g_tasks[TASK_MAX_NUMS];
 
@@ -31,32 +35,40 @@ static int get_free_task_index()
     return -1;
 }
 
+/* 
+    编写gdb测试脚本验证调度算法的正确性：
+ */
 task_t *get_next_ready_task()
 {
-    const task_t *highPrioTask = NULL;
-    bool notJustIdle = false; //除了idle还有其它任务
+    task_t *highPrioTask = NULL;
+    bool hasWaitTask = false; //有 TASK_WAITING 状态的任务
 
+    /* 当前情况下，有n中任务类型：idle任务、ready任务、waiting任务（时间片执行完了）、睡眠任务 */
     for(int i = 1; i < TASK_MAX_NUMS; ++i) {
         if(!g_tasks[i])
             continue;
-        notJustIdle = true;
+
+        if(g_tasks[i]->state == TASK_WAITING) {
+            hasWaitTask = true;
+            continue;
+        }
+
         if(g_tasks[i]->state == TASK_READY) { //找到ready的任务
             if(!highPrioTask) { //第一个ready任务
-                if(g_tasks[i]->counter)    //时间片为0说明该任务已经执行完自己的时间片了。
-                    highPrioTask = g_tasks[i];
+                highPrioTask = g_tasks[i];
                 continue;
             }
             
-            if((g_tasks[i]->priority > highPrioTask->priority) && g_tasks[i]->counter) {   //比上个任务的优先级高，并且时间片不为0
+            if(g_tasks[i]->priority > highPrioTask->priority) {   //比上个任务的优先级高
                 highPrioTask = g_tasks[i];
             }
         }
     }
 
     if(!highPrioTask ) {
-        if(notJustIdle) { //除了idle还有其它任务，但是这些任务的时间片都执行完了，重置所有任务的时间片，并调度优先级最高的任务。
+        if(hasWaitTask) { //没有ready任务，且含有waiting任务，此时需要重置waiting任务的时间片
             for(int i = 1; i < TASK_MAX_NUMS; ++i) {
-                if(!g_tasks[i])
+                if(!g_tasks[i] || g_tasks[i]->state != TASK_WAITING)
                     continue;
                 g_tasks[i]->counter = g_tasks[i]->priority; //重置时间片
                 if(!highPrioTask) {
@@ -68,7 +80,7 @@ task_t *get_next_ready_task()
                     highPrioTask = g_tasks[i];
                 }
             }
-        } else { //只有idle任务
+        } else { //只有idle任务，没有waiting和ready任务，可能有sleep任务。
             highPrioTask = g_tasks[0];
         }
     }
@@ -127,30 +139,30 @@ static void idle_func()
     printk("enter idle task....\n");
     while(1) {
         delay_ms(1000);
-        printk("*******idle task, cycle times %d ...\n", cout);
+        // printk("*******idle task, cycle times %d ...\n", cout);
         cout++;
     }
 }
 
 static void kernel_func()
 {
-    static unsigned int cout = 2;
+    static unsigned int cout = 0;
     printk("enter kernel task....\n");
-    while(cout) {
-        delay_ms(1000);
+    while(1) {
+        task_sleep(3000);
         printk("-------kernel task, cycle times %d ...\n", cout);
-        cout--;
+        cout++;
     }
 }
 
 static void user_func()
 {
-    static unsigned int cout = 3;
+    static unsigned int cout = 0;
     printk("enter user task....\n");
-    while(cout) {
-        delay_ms(1000);
+    while(1) {
+        task_sleep(1000);
         printk("#######user task, cycle times %d ...\n", cout);
-        cout--;
+        cout++;
     }
 }
 
@@ -196,8 +208,40 @@ int sub_task_counter(task_t *task)
 {
     // printk("Current task %s ", task->name);
     // printk("couter %d.\n ", task->counter);
-    if(!task->counter) //任务时间片已执行完，需要调度下一个任务
+    task_wakeup(); //没执行一次时钟中断检查任务唤醒情况
+
+    if(!task->counter) { //任务时间片已执行完，需要调度下一个任务
+        task->state = TASK_WAITING;
         return 1;
+    }
     task->counter--;
     return 0;
+}
+
+void task_sleep(int ms)
+{
+    task_t *sleepTask = CURRENT;
+    if(!CURRENT) {
+        printk("error! call in task...\n");
+        return;
+    }
+
+    CLOSE_INTERRUPT();
+    sleepTask->counter = cpu_tickes + ms/jiffy; //这里有个循环计数问题需要解决。
+    sleepTask->state = TASK_SLEEPING;
+    task_deal_sleep();
+}
+
+void task_wakeup()
+{
+    for(int i = 1; i < TASK_MAX_NUMS; ++i) {
+        if(!g_tasks[i])
+            continue;
+        if(g_tasks[i]->state == TASK_SLEEPING) {
+            if(cpu_tickes >= g_tasks[i]->counter) { //延时时间到了
+                g_tasks[i]->state = TASK_READY;
+                g_tasks[i]->counter = g_tasks[i]->priority;
+            }
+        }
+    }
 }
