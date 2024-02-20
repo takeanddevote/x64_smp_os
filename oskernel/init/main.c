@@ -10,6 +10,11 @@
 #include "linux/task.h"
 
 
+void user_func()
+{
+    while(1);
+}
+
 int kernel_main()
 {   
     console_init();

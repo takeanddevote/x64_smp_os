@@ -128,3 +128,38 @@ task_deal_sleep:
     sti
     ret
 
+
+extern USER_CODE_SECTOR
+extern USER_DATA_SECTOR
+extern get_esp3
+extern user_func
+global mov_to_user_mode
+
+; ss3、esp3、eflags、cs、eip
+mov_to_user_mode:
+    mov eax, [CURRENT]
+
+    push eax
+    call get_esp3
+    add esp, 4
+
+    mov ecx, [USER_DATA_SECTOR]
+    push ecx                ;ss3
+    push eax                ;esp3
+    pushf                   ;eflags
+
+    mov ecx, [USER_CODE_SECTOR]
+    push ecx                ;cs
+    push call_user_function ;eip
+
+    mov ax, [USER_DATA_SECTOR]    ;手动设置其它段选择子
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+    iretd
+
+call_user_function:
+    call user_func 
+    jmp $

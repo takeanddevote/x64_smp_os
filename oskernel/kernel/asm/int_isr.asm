@@ -39,7 +39,6 @@ interrupt_handle:
     call printk
     add esp, 4  ;__cdecl 外平栈
 
-    xchg bx, bx
     iret
 
 

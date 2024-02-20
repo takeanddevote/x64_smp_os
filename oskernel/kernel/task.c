@@ -23,6 +23,7 @@ extern int cpu_tickes;
 
 extern void sched_task(void);
 extern void task_deal_sleep(void);
+extern void mov_to_user_mode(void);
 
 task_t *g_tasks[TASK_MAX_NUMS];
 
@@ -103,13 +104,21 @@ task_t *task_create(const char *name, task_fn func, size_t stackSize, size_t pri
         return NULL;
     }
 
-    newTask->stack = kmalloc(stackSize); //分配任务栈
+    newTask->stack = kmalloc(PAGE_SIZE); //分配内核任务栈
     if(!newTask->stack) {
         printk("tasks create fail, no memory.\n");
         kfree_s(newTask, sizeof(*newTask));
         return NULL;
     }
     
+    newTask->user_stack = kmalloc(stackSize); //分配用户任务栈
+    if(!newTask->user_stack) {
+        printk("tasks create fail, no memory.\n");
+        kfree_s(newTask->stack, PAGE_SIZE);
+        kfree_s(newTask, sizeof(*newTask));
+        return NULL;
+    }
+
     //初始化任务描述符
     newTask->stackSize = stackSize;
     // newTask->stack = (void *)((u32)newTask->stack +  stackSize - 1); //满减栈
@@ -120,8 +129,13 @@ task_t *task_create(const char *name, task_fn func, size_t stackSize, size_t pri
     newTask->fist_sched = 1; //标记第一次调度
 
     //构造一个初始现场
-    newTask->context.esp = ((u32)newTask->stack + stackSize - 1); //满减栈
+    newTask->context.esp = ((u32)newTask->stack + PAGE_SIZE - 1); //满减栈
     newTask->context.eip = (u32)func;
+
+    newTask->esp0 = newTask->context.esp;
+    newTask->ebp0 = newTask->esp0;
+    newTask->esp3 = ((u32)newTask->user_stack + stackSize - 1);
+    newTask->ebp3 = newTask->esp3;
 
     newTask->counter = priority;
     newTask->priority = priority; //时间片和优先级值相等
@@ -146,13 +160,14 @@ static void idle_func()
 
 static void kernel_func()
 {
-    static unsigned int cout = 0;
-    printk("enter kernel task....\n");
-    while(1) {
-        task_sleep(3000);
-        printk("-------kernel task, cycle times %d ...\n", cout);
-        cout++;
-    }
+    mov_to_user_mode();
+    // static unsigned int cout = 0;
+    // printk("enter kernel task....\n");
+    // while(1) {
+    //     task_sleep(3000);
+    //     printk("-------kernel task, cycle times %d ...\n", cout);
+    //     cout++;
+    // }
 }
 
 static void user_func()
@@ -170,7 +185,7 @@ static void create_idle()
 {
     task_create("idle", idle_func, 2048, 1);
     task_create("kernel task", kernel_func, 2048, 3);
-    task_create("user task", user_func, 2048, 2);
+    // task_create("user task", user_func, 2048, 2);
 }
 
 void init_task()
@@ -245,3 +260,9 @@ void task_wakeup()
         }
     }
 }
+
+u32 get_esp3(const task_t *task)
+{
+    return task->esp3;
+}
+

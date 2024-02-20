@@ -59,10 +59,16 @@ typedef struct {
     task_state_e state;
     task_fn function;
     void *stack;
+    void *user_stack;
     int stackSize;
     int fist_sched;
     size_t priority;    //任务优先级
     size_t counter;     //任务时间片，每调度一次递减直到0
+
+    u32 esp0;
+    u32 ebp0;
+    u32 esp3;
+    u32 ebp3;
 } task_t;
 
 void init_task();
