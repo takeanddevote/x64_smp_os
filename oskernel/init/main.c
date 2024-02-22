@@ -19,10 +19,10 @@ int kernel_main()
 {   
     console_init();
     printk("enter kernel main......\n");
-    gdt_init();
-    init_idt();
     mm_init();
     vm101012_init();
+    gdt_init();
+    init_idt();
     init_task();
 
     clock_init();//qemu测试发现只要置为时钟中断标志位，时钟不用初始化就能运行

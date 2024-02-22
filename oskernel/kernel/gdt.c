@@ -3,14 +3,20 @@
 #include "linux/type.h"
 #include "lib/string.h"
 #include "linux/system.h"
+#include "linux/task.h"
+#include "linux/mm.h"
+#include "linux/memory.h"
 
 static gdt_segment_desciptor g_gdt[256];
 static gdtr_value g_gdtr;
+
+static tss_t g_tss;
 
 u32 KERNEL_CODE_SECTOR = (1 << 3) | 0b00;
 u32 KERNEL_DATA_SECTOR = (2 << 3) | 0b00;    //内核态的代码段和数据段描述符
 u32 USER_CODE_SECTOR = (3 << 3) | 0b11;
 u32 USER_DATA_SECTOR = (4 << 3) | 0b11;    //用户态的代码段和数据段描述符
+u32 TSS_SECTOR = (5 << 3) | 0b11;    //任务段选择子
 
 /* 
 1、先使用sgdt指令通过内联汇编把已设置的gdt表地址和表大小读取到全局数组中
@@ -58,6 +64,32 @@ static void build_user_ss_segment_desc(gdt_segment_desciptor *desc)
     desc->G = 1; //单位4KB
 }
 
+/* tss任务段描述符 */
+static void build_tss_segment_desc(gdt_segment_desciptor *desc)
+{
+    //设置跨态内核栈。所有用户态进程进入内核态都共用一个内核栈
+    g_tss.ss0 = KERNEL_DATA_SECTOR;
+    g_tss.esp0 = ((u32)kmalloc(PAGE_SIZE)) + PAGE_SIZE;
+    // g_tss.esp0 = ((u32)get_free_page()) + PAGE_SIZE;
+
+    desc->segment_limit_0_15 = 0xffff;
+    desc->segment_limit_16_19 = 0xf;
+
+    u32 base = (u32)&g_tss; //段描述符的基址设为tss结构体变量的地址
+    desc->base_address_0_15 = base & 0xffff;
+    desc->base_address_16_23 = (base >> 16) & 0xff;
+    desc->base_address_24_31 = (base >> 24) & 0xff;
+
+    desc->S = 0;    //系统段
+    desc->type = 0b1001;    //32bit TSS
+
+    desc->DPL = 0b00;   //R1特权级
+    desc->P = 1;
+    desc->AVL = 0;
+    desc->DB = 1; //32位段
+    desc->G = 1; //单位4KB
+}
+
 int gdt_init()
 {
     __asm__ volatile("sgdt g_gdtr;");
@@ -72,14 +104,20 @@ int gdt_init()
     int idx = 0;
     g_gdtr.gdt_max_offset += 8;
     idx = (g_gdtr.gdt_max_offset / 8) - 1;
-    build_user_cs_segment_desc(&g_gdt[idx]);
+    build_user_cs_segment_desc(&g_gdt[idx]); //r3代码段描述符
 
     g_gdtr.gdt_max_offset += 8;
     idx = (g_gdtr.gdt_max_offset / 8) - 1;
-    build_user_ss_segment_desc(&g_gdt[idx]);
+    build_user_ss_segment_desc(&g_gdt[idx]); //r3数据段描述符
+
+    g_gdtr.gdt_max_offset += 8;
+    idx = (g_gdtr.gdt_max_offset / 8) - 1;
+    build_tss_segment_desc(&g_gdt[idx]); //tss任务段描述符
+    
 
     g_gdtr.gdt_base_addr = (u32)g_gdt;
     g_gdtr.gdt_max_offset = g_gdtr.gdt_max_offset;
 
     __asm__ volatile("lgdt g_gdtr;");
+    __asm__ volatile("ltr ax;"::"a"(TSS_SECTOR)); //设置tss段选择子到tr寄存器。注意这里需要先确保tss段描述符已经设置进gdt了，并已经设置gdtr寄存器了（先定义资源），再设置ltr（使用资源）。
 }
