@@ -31,4 +31,9 @@ typedef struct {
 
 int gdt_init();
 
+extern u32 KERNEL_CODE_SECTOR;
+extern u32 KERNEL_DATA_SECTOR;
+extern u32 USER_CODE_SECTOR;
+extern u32 USER_DATA_SECTOR;
+
 #endif

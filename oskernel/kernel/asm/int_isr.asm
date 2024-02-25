@@ -89,9 +89,32 @@ clock_handle:
     mov eax, [esp+8] ;保存eflags
     mov [ecx+4*9], eax
 
+    mov eax, [esp+4] ;保存cs
+    mov [ecx+4*19], eax
+
+    xor ebx, ebx
+    mov ebx, cs
+    and eax, 0b11  
+    and ebx, 0b11
+    cmp eax, ebx    ;检查是否跨态
+    je .not_skip_privilege_level
+    
+    mov eax, [esp+12]   ;跨态
+    mov [ecx+4*14], eax ;保存esp3，跨态：ss、esp、eflags、cs、eip
+
+    mov eax, [esp+16]
+    mov [ecx+4*20], eax ;保存ss3
+    jmp .deal_hander
+
+.not_skip_privilege_level   ;不跨态的话，打断任务的栈就是esp指向的栈，如果跨态的话，从当前esp寄存器中中取出esp
     mov eax, esp
     add eax, 12
-    mov [ecx+4*14], eax ;保存esp，因为中断push了eflags、cs、eip
+    mov [ecx+4*14], eax ;保存esp0，不跨态：eflags、cs、eip
+
+    xor eax, eax
+    mov eax, ss ;保存ss0
+    mov [ecx+4*20], eax
+
     jmp .deal_hander
 
 .fisrt_into_tasks: ;内核第一次进入任务切换，因此不需要保存上个任务的现场。

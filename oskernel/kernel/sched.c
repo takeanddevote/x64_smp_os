@@ -60,8 +60,7 @@ task_t *CURRENT = NULL;
 3、内核态返回用户态：通过构造中断返回栈实现内核态返回用户态。
 （1）、中断返回栈
     ·系统调用返回：
-        iret：eflags、cs、eip（要主动设置ss、esp3）。
-        iretd：eflags、cs、eip、ss、esp3。
+        iretd：ss、esp、eflags、cs、eip。不能使用iret，因为如果涉及跨态，你直接mov ss,ax，ax是r3的段选择子，会触发异常，因此要使用iretd。
     ·硬件中断返回：
 
 （2）、所构造的返回栈中，cs是R3的代码段选择子，ss也是r3的栈段选择子，因此需要构造两个r3的段描述符。出于方便，ss和ds共用一个数据段描述符即可。
@@ -86,7 +85,7 @@ task_t *CURRENT = NULL;
 
 （3）代码段和特权级的切换：实质就是中断的响应过程。
     ·读取idtr寄存器获取idt表，并通过中断号来索引中断描述符。
-    ·保存现场压栈ss、esp、eflags、cs、eip（压入哪个栈？）
+    ·保存现场压栈ss、esp、eflags、cs、eip（压入从tss取出的内核栈）
     ·权限检查，加载段选择子到cs，实现特权级切换，并从段描述符中取出中断服务函数，并跳转。
 
 （4）其它段的切换，如ds、fs、gs等，则需手动设置。

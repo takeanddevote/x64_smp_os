@@ -26,47 +26,102 @@ sched_task:
     cmp eax, 0
     je .task_not_fist_sched
 
-.task_fist_sched:
+.task_fist_sched: ; sched_task.task_fist_sched
     ;任务第一次调度
-    mov esp, [ecx+14*4] ;切换到任务自己的栈
+    mov esp, [ecx+14*4] ;设置esp
+    mov ax, [ecx+4*20] ;所有选择子都设置为数据段选择子
+    mov ds, ax
+    mov ss, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
     mov eax, .task_exit ;先压栈任务退出处理函数
     push eax
-    mov eax, [ecx+8*4]
-    push eax ;设置ret的返回地址，设为函数地址即可实现调用任务函数。这里有个细节，push会导致esp变化，而ret会pop，所以前后任务栈不变。
-    jmp .siwtch
 
-.task_not_fist_sched:   ;不是第一次调度，则恢复任务现场
+    ;构造返回栈：eflags、cs、eip
+    pushf
+    mov eax, [esp]
+    add esp, 4
+    or eax, 0b10_00000000 ;开启中断
+    push eax  ;栈设置eflags
+
+    xor eax, eax
+    mov eax, [ecx+19*4]
+    push eax  ;栈设置cs
+
+    mov eax, [ecx+8*4]
+    push eax  ;栈设置eip
+    iret ;TODO：有空更改为iretd
+
+.task_not_fist_sched:   ;不是第一次调度，则恢复任务现场 sched_task.task_not_fist_sched
     mov eax, [CURRENT]
 
     mov ebx, [eax+4*11]
-    mov ecx, [eax+4*12]
+    ; mov ecx, [eax+4*12]
     mov edx, [eax+4*13]
-    mov esp, [eax+4*14]
+    ; mov esp, [eax+4*14]
     mov ebp, [eax+4*15]
     mov esi, [eax+4*16]
     mov edi, [eax+4*17]
 
-    push ecx ;先保存ecx
+    ;构造返回栈：ss、esp、eflags、cs、eip
+    mov ecx, [eax+20*4]
+    push ecx  ;栈设置ss
 
-    mov ecx, [eax+4*9] ;恢复eflags。
-    ;注意保存的eflags的IF位是开启的，因此要清除IF位再恢复，不然在恢复现场就会发生中断，导致程序奔溃。
-    and ecx, 0b11111111_11111111_11111101_11111111 
+    mov ecx, [eax+14*4]
+    push ecx  ;栈设置esp
+
+    pushf
+    mov ecx, [esp]
+    add esp, 4
+    or ecx, 0b10_00000000 ;开启中断
+    push ecx  ;栈设置eflags
+
+    xor ecx, ecx
+    mov ecx, [eax+19*4]
+    push ecx  ;栈设置cs
+
+    mov ecx, [eax+8*4]
+    push ecx  ;栈设置eip
+
+    mov ecx, [eax+4*12] ;恢复ecx
     push ecx
-    popf ;从栈中恢复值到eflags中
+    mov ecx, [eax+4*10] ;恢复eax
+    push ecx
 
-    mov ecx, [eax+4*10]
-    mov [esp-4], ecx ;先把eax的值放到栈中
+    mov ax, [eax+4*20] ;所有选择子都设置为数据段选择子
+    mov ds, ax
+    ; mov ss, ax ;设置跨态的栈段选择子会异常
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+    pop eax ;因为之前设置了ds了，因此不能再访问内存数据段了，但可以访问栈段。
+    pop ecx
+
+
+    ; push ecx ;先保存ecx
+
+    ; mov ecx, [eax+4*9] ;恢复eflags。
+    ; ;注意保存的eflags的IF位是开启的，因此要清除IF位再恢复，不然在恢复现场就会发生中断，导致程序奔溃。
+    ; and ecx, 0b11111111_11111111_11111101_11111111 
+    ; push ecx
+    ; popf ;从栈中恢复值到eflags中
+
+    ; mov ecx, [eax+4*10]
+    ; mov [esp-4], ecx ;先把eax的值放到栈中
     
-    pop ecx;恢复ecx，此时eax在[esp-4]处，并且此时esp和恢复现场的一致。
+    ; pop ecx;恢复ecx，此时eax在[esp-4]处，并且此时esp和恢复现场的一致。
 
-    mov eax, [eax+4*8]
-    push eax ;压栈eip返回地址，配合ret实现任务切换
+    ; mov eax, [eax+4*8]
+    ; push eax ;压栈eip返回地址，配合ret实现任务切换
 
-    mov eax, [esp-4] ;恢复eax
+    ; mov eax, [esp-4] ;恢复eax
 
 .siwtch:
-    sti ;开启中断
-    ret
+    ; sti ;开启中断
+    iretd
 
 .task_exit:
     cli ;任务退出后中断处于开启状态，需要关闭确保不被打断。

@@ -69,14 +69,20 @@ typedef struct {
     u32 ebp0;
     u32 esp3;
     u32 ebp3;
+
+    u32 runPL;
 } task_t;
 
 void init_task();
-task_t *task_create(const char *name, task_fn func, size_t stackSize, size_t priority);
+task_t *ktask_create(const char *name, task_fn func, size_t stackSize, size_t priority);
+task_t *utask_create(const char *name, task_fn func, size_t stackSize, size_t priority);
 int get_first_sched_flag(task_t *task);
 void set_task_ready(task_t *task);
 
 void task_sleep(int ms);
 void task_wakeup();
+
+void set_runPL(task_t *task, u32 PL);
+u32 get_runPL(const task_t *task);
 
 #endif

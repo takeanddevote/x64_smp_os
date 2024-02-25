@@ -1,0 +1,4 @@
+break kernel_main
+break test_func
+break sched_task.task_not_fist_sched
+break *0x000039fa
