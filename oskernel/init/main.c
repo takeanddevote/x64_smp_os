@@ -8,10 +8,13 @@
 #include "linux/vm101012.h"
 #include "linux/clock.h"
 #include "linux/task.h"
+#include "lib/unistd.h"
 
 
 void user_func()
 {
+    char str[] = "sys call success."; 
+    write(STDOUT_FILENO, str, sizeof(str)) ;
     while(1);
 }
 

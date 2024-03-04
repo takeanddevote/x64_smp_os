@@ -10,6 +10,7 @@ typedef short s16;
 typedef unsigned int u32;
 typedef int s32;
 typedef unsigned int size_t;
+typedef signed int ssize_t;
 
 typedef char bool;
 #define true    1

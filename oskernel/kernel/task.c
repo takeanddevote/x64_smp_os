@@ -247,7 +247,7 @@ static void test_func()
     while(1) {
         // task_sleep(1000);
         // delay_ms(500);
-        printk("#######user task, cycle times %d ...\n", cout);
+        // printk("#######user task, cycle times %d ...\n", cout);
         cout++;
     }
 }
