@@ -9,12 +9,13 @@
 #include "linux/clock.h"
 #include "linux/task.h"
 #include "lib/unistd.h"
+#include "lib/stdio.h"
 
 
 void user_func()
 {
     char str[] = "sys call success."; 
-    write(STDOUT_FILENO, str, sizeof(str)) ;
+    printf("hello user space.\n");
     while(1);
 }
 
