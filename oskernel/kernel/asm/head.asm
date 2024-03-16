@@ -1,4 +1,4 @@
-[SECTION .text]
+[SECTION .head.text]
 ; [ORG 0x1200] ;因为是要编译为可重定位文件，因此链接地址是链接阶段指定的
 [BITS 32]
 

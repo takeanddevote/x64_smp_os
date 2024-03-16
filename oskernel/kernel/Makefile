@@ -1,0 +1,13 @@
+obj-y += asm/
+obj-y += chr_drv/
+obj-y += mm/
+obj-y += delay.o
+obj-y += gdt.o
+obj-y += idt.o
+obj-y += memory.o
+obj-y += printk.o
+obj-y += sched.o
+obj-y += syscall.o
+obj-y += task.o
+obj-y += vm101012.o
+obj-y += vsprintf.o

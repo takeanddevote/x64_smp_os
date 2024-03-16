@@ -211,7 +211,7 @@ clock_handle:
     mov [ecx+4*20], eax ;保存ss3
     jmp .deal_hander
 
-.not_skip_privilege_level   ;不跨态的话，打断任务的栈就是esp指向的栈，如果跨态的话，从当前esp寄存器中中取出esp
+.not_skip_privilege_level:   ;不跨态的话，打断任务的栈就是esp指向的栈，如果跨态的话，从当前esp寄存器中中取出esp
     mov eax, esp
     add eax, 12
     mov [ecx+4*14], eax ;保存esp0，不跨态：eflags、cs、eip

@@ -1,0 +1,84 @@
+PHONY += __build
+__build:
+
+# 1、include当前目录的makefile，从而继承obj-y变量。
+# 2、处理obj-y变量，分离目标(.o)和子目录。
+# 3、定义处理子目录的目标规则
+# 4、定义处理编译目标的规则
+
+# obj-y：内核	obj-b：boot  obj-l：loader
+obj-y := 
+obj-b := 
+obj-l := 
+
+# 包含当前目录的makefile，以及库
+include $(srctree)/scripts/Kbuild.include
+include Makefile
+
+
+# 中间文件输出目录
+CUR_OUT_REL_PATH := $(subst $(call delete_last_slash,$(srctree)),,$(shell pwd))
+CUR_OUT_PATH := $(call delete_last_slash,$(KBUILD_SRC))$(CUR_OUT_REL_PATH)
+ifeq ($(wildcard $(CUR_OUT_PATH)),)
+$(shell mkdir -p $(CUR_OUT_PATH))
+endif
+
+
+# 子目录：去掉/
+subdir-n := $(sort $(patsubst %/,%,$(filter-out %.o, $(obj-y) $(obj-b) $(obj-l))))
+
+PHONY += $(subdir-n)
+# 子目录built-in.o文件
+subdir-b := $(foreach val,$(subdir-n),$(val)/built-in.o)
+# 当前目录的.o文件
+curdir-o := $(foreach obj,$(sort $(filter %.o, $(obj-y) $(obj-b) $(obj-l))),$(obj))
+# 当前目录的头文件依赖文件，内容是目标文件和依赖的关系，包含这个文件，当头文件修改时，相应的目标就会更新。
+curdir-deps := $(foreach val,$(curdir-o),$(dir $(val)).$(notdir $(val)).d)
+ifneq ($(wildcard $(curdir-deps)),)
+include $(curdir-deps)
+endif
+# $(info $(subdir-n)--$(subdir-b)--$(curdir-o))
+
+# 添加输出前缀
+subdir-b := $(addprefix $(CUR_OUT_PATH)/,$(subdir-b))
+curdir-o := $(addprefix $(CUR_OUT_PATH)/,$(curdir-o))
+
+# 默认目标
+__build : $(subdir-n) $(CUR_OUT_PATH)/built-in.o
+
+# 递归子目录
+$(subdir-n) :
+	$(Q) $(MAKE) -C $@ -f $(srctree)/scripts/Makefile.build
+
+# 处理当前目录的编译和链接: -r 链接成.o文件
+$(CUR_OUT_PATH)/built-in.o : $(curdir-o) $(subdir-b)
+ifneq ($(strip $(obj-y)),)
+	$(Q) $(LD) $(LDFLAGS) -r -o $@ $^
+	$(info LD 	 $(notdir $^)     $(notdir $@))
+else
+	mv $< $@
+	$(info mv 	 $(notdir $^)     $(notdir $@))
+endif
+# c头文件依赖文件
+dep_file = $(dir $@).$(notdir $@).d
+
+# 编译c源文件，并生成头文件依赖文件
+$(CUR_OUT_PATH)/%.o : %.c
+	$(Q) $(CC) $(CFLAGS) -Wp,-MD,$(dep_file),-MT,$@ -c -o $@ $<
+	$(info CC 	 $<     $(<:.c=.o))
+
+# 编译汇编文件
+$(CUR_OUT_PATH)/%.o : %.asm
+	$(Q) $(AS) $(ASFLAGS) $< -o $@
+
+.PHONY : $(PHONY)
+
+
+
+
+
+
+
+
+
+

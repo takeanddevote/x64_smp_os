@@ -1,0 +1,4 @@
+
+build := 
+
+delete_last_slash = $(patsubst %/,%,$(1))
