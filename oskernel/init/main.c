@@ -10,8 +10,9 @@
 #include "linux/task.h"
 #include "lib/unistd.h"
 #include "lib/stdio.h"
+#include "asm/asm.h"
 
-
+/* 32位保护模式下，用户态 */
 void user_func()
 {
     char str[] = "sys call success."; 
@@ -19,36 +20,12 @@ void user_func()
     while(1);
 }
 
+/* 32位保护模式下，内核态 */
 int kernel_main()
 {   
     console_init();
     printk("enter kernel main......\n");
-    mm_init();
-    vm101012_init();
-    gdt_init();
-    init_idt();
-    init_task();
-
-    clock_init();//qemu测试发现只要置为时钟中断标志位，时钟不用初始化就能运行
-    BOCHS_DEBUG_BREAKPOINT
-    
-    void *ptr1 = kmalloc(100);
-    void *ptr2 = kmalloc(100);
-    void *ptr3 = kmalloc(100);
-    void *ptr4 = kmalloc(129);
-    printk("ptr1 = %p.\n", ptr1);
-    printk("ptr2 = %p.\n", ptr2);
-    printk("ptr3 = %p.\n", ptr3);
-    printk("ptr4 = %p.\n", ptr4);
-
-    kfree_s(ptr2, 100);
-    ptr2 = kmalloc(100);
-    printk("ptr2 = %p.\n", ptr2);
-
-    kfree_s(ptr4, 129);
-    ptr4 = kmalloc(129);
-    printk("ptr4 = %p.\n", ptr4);
-
+    check_x64_support();
 
     while(1); 
 }

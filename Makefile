@@ -99,8 +99,7 @@ loader:
 	$(Q) $(MAKE) -C oskernel/loader -f $(srctree)/scripts/Makefile.build
 
 qemu: all
-	$(Q) qemu-system-i386 -m 32M -boot c -hda $(KBUILD_SRC)$(HD_IMG_NAME)
-
+	$(Q) qemu-system-x86_64 -m 32M -boot c -cpu Opteron_G5 -hda $(KBUILD_SRC)$(HD_IMG_NAME)
 
 
 
