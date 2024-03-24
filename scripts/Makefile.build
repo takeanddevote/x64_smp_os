@@ -56,8 +56,8 @@ ifneq ($(strip $(obj-y)),)
 	$(Q) $(LD) $(LDFLAGS) -r -o $@ $^
 	$(info LD 	 $(notdir $^)     $(notdir $@))
 else
-	mv $< $@
-	$(info mv 	 $(notdir $^)     $(notdir $@))
+	cp $< $@
+	$(info cp 	 $(notdir $^)     $(notdir $@))
 endif
 # c头文件依赖文件
 dep_file = $(dir $@).$(notdir $@).d
@@ -70,6 +70,8 @@ $(CUR_OUT_PATH)/%.o : %.c
 # 编译汇编文件
 $(CUR_OUT_PATH)/%.o : %.asm
 	$(Q) $(AS) $(ASFLAGS) $< -o $@
+	$(info $(AS) 	 $<     $(<:.asm=.o))
+
 
 .PHONY : $(PHONY)
 

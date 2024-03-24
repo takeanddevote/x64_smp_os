@@ -76,6 +76,7 @@ endif
 
 # 目标规则
 all: chkKbuildSrc boot loader
+	$(Q) ([ -e $(KBUILD_SRC)/$(HD_IMG_NAME) ] && rm -f $(KBUILD_SRC)/$(HD_IMG_NAME); true)
 	$(Q) $(MAKE) -C ./ -f $(srctree)/scripts/Makefile.build
 	$(Q) $(LD) $(LDFLAGS) -o $(KBUILD_SRC)/$(TARGET) $(KBUILD_SRC)/built-in.o -T $(KBUILD_LDS)
 	$(Q) echo "LD 	 built-in.o    "$(TARGET)
@@ -109,13 +110,16 @@ PHONY += mrproper
 clean:
 	$(Q) -rm -f $(shell find -name "*.o")
 	$(Q) -rm -f $(KBUILD_SRC)/$(TARGET)
+	$(Q) true
 
 distclean:
-	$(Q) -rm -f $(shell find $(KBUILD_SRC) -name "*.o")
-	$(Q) -rm -f $(shell find $(KBUILD_SRC) -name "*.d")
-	$(Q) -rm -f $(KBUILD_SRC)/$(TARGET)
+	$(Q) - rm -f $(shell [ -e $(KBUILD_SRC) ] && find $(KBUILD_SRC) -name "*.o")
+	$(Q) - rm -f $(shell [ -e $(KBUILD_SRC) ] && find $(KBUILD_SRC) -name "*.d")
+	$(Q) - rm -f $(KBUILD_SRC)/$(TARGET)
+	$(Q) true
 
 mrproper : distclean
-	$(Q) -rm -r $(KBUILD_SRC)
+	$(Q) -rm -rf $(KBUILD_SRC)
+	$(Q) true
 
 .PHONY : $(PHONY)
