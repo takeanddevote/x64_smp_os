@@ -100,3 +100,13 @@ check_x64_support:
     call printk
     add esp, 4
     jmp $
+
+global check_ia32e_status
+check_ia32e_status:
+    xor ebx, ebx
+    mov ecx, 0xC0000080 ; IA32_EFER寄存器编号
+    RDMSR
+    bt eax, 10  ;LMA位：检测是否进入ia32e模式
+    setc bl
+    mov eax, ebx
+    ret

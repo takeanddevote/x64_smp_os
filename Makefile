@@ -101,7 +101,8 @@ loader:
 qemu: all
 	$(Q) qemu-system-x86_64 -m 32M -boot c -cpu Opteron_G5 -hda $(KBUILD_SRC)$(HD_IMG_NAME)
 
-
+bochs: all
+	bochs -q -f bochsrc
 
 PHONY += clean
 PHONY += distclean
