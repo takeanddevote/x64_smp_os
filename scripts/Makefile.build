@@ -34,14 +34,16 @@ subdir-b := $(foreach val,$(subdir-n),$(val)/built-in.o)
 curdir-o := $(foreach obj,$(sort $(filter %.o, $(obj-y) $(obj-b) $(obj-l))),$(obj))
 # 当前目录的头文件依赖文件，内容是目标文件和依赖的关系，包含这个文件，当头文件修改时，相应的目标就会更新。
 curdir-deps := $(foreach val,$(curdir-o),$(dir $(val)).$(notdir $(val)).d)
-ifneq ($(wildcard $(curdir-deps)),)
-include $(curdir-deps)
-endif
 # $(info $(subdir-n)--$(subdir-b)--$(curdir-o))
 
 # 添加输出前缀
 subdir-b := $(addprefix $(CUR_OUT_PATH)/,$(subdir-b))
 curdir-o := $(addprefix $(CUR_OUT_PATH)/,$(curdir-o))
+curdir-deps  := $(addprefix $(CUR_OUT_PATH)/,$(curdir-deps))
+
+ifneq ($(wildcard $(curdir-deps)),)
+include $(curdir-deps)
+endif
 
 # 默认目标
 __build : $(subdir-n) $(CUR_OUT_PATH)/built-in.o

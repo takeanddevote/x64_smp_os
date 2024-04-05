@@ -42,12 +42,11 @@ int gdt_init();
 
 extern u32 KERNEL_CODE_SECTOR;
 extern u32 KERNEL_DATA_SECTOR;
+extern u32 USER_CODE_SECTOR;
+extern u32 USER_DATA_SECTOR;
 #ifdef CONFIG_ARCH_X64
 extern u32 KERNEL_X64_CODE_SECTOR;
 extern u32 KERNEL_X64_DATA_SECTOR;
-#else
-extern u32 USER_CODE_SECTOR;
-extern u32 USER_DATA_SECTOR;
 #endif
 
 #endif

@@ -10,6 +10,7 @@
 #include "linux/task.h"
 #include "lib/unistd.h"
 #include "lib/stdio.h"
+#include "lib/string.h"
 #include "asm/asm.h"
 #include "configs/autoconf.h"
 
