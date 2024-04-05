@@ -6,6 +6,7 @@
 #include "linux/task.h"
 #include "linux/mm.h"
 #include "linux/memory.h"
+#include "configs/autoconf.h"
 
 static gdt_segment_desciptor g_gdt[256];
 static gdtr_value g_gdtr;
@@ -14,10 +15,14 @@ static tss_t g_tss;
 
 u32 KERNEL_CODE_SECTOR = (1 << 3) | 0b00;
 u32 KERNEL_DATA_SECTOR = (2 << 3) | 0b00;    //内核态的代码段和数据段描述符
+#ifdef CONFIG_ARCH_X64
+u32 KERNEL_X64_CODE_SECTOR = (3 << 3) | 0b00;
+u32 KERNEL_X64_DATA_SECTOR = (4 << 3) | 0b00;
+#else
+#endif
 u32 USER_CODE_SECTOR = (3 << 3) | 0b11;
 u32 USER_DATA_SECTOR = (4 << 3) | 0b11;    //用户态的代码段和数据段描述符
 u32 TSS_SECTOR = (5 << 3) | 0b11;    //任务段选择子
-
 /* 
 1、先使用sgdt指令通过内联汇编把已设置的gdt表地址和表大小读取到全局数组中
 2、在全局数组中新增表项
@@ -90,6 +95,50 @@ static void build_tss_segment_desc(gdt_segment_desciptor *desc)
     desc->G = 1; //单位4KB
 }
 
+#ifdef CONFIG_ARCH_X64
+/* x64 内核态 代码段描述符 */
+static void build_x64_r0_cs_desc(gdt_segment_desciptor *desc)
+{
+    desc->segment_limit_0_15 = 0;
+    desc->segment_limit_16_19 = 0;
+
+    desc->base_address_0_15 = 0;
+    desc->base_address_16_23 = 0;
+    desc->base_address_24_31 = 0;
+
+    desc->S = 1;    //代码段
+    desc->type = 0b1000;    //只可执行
+
+    desc->DPL = 0b00;   //R0特权级
+    desc->P = 1;
+    desc->AVL = 0;
+    desc->L = 1;    // 64位长模式代码
+    desc->DB = 0; // 64位下db必须为0
+    desc->G = 1; //单位4KB
+}
+/* x64 内核态 数据描述符 */
+static void build_x64_r0_ds_desc(gdt_segment_desciptor *desc)
+{
+    desc->segment_limit_0_15 = 0;
+    desc->segment_limit_16_19 = 0;
+
+    desc->base_address_0_15 = 0;
+    desc->base_address_16_23 = 0;
+    desc->base_address_24_31 = 0;
+
+    desc->S = 1;    //数据段
+    desc->type = 0b0010;    //可读可写
+
+    desc->DPL = 0b00;   //R0特权级
+    desc->P = 1;
+    desc->AVL = 0;
+    desc->L = 1; //64位长模式代码
+    desc->DB = 0; //64位下db必须为0
+    desc->G = 1; //单位4KB
+}
+
+#endif /* CONFIG_ARCH_X64 */
+
 int gdt_init()
 {
     __asm__ volatile("sgdt g_gdtr;");
@@ -100,6 +149,17 @@ int gdt_init()
     memcpy(g_gdt, base, g_gdtr.gdt_max_offset);
     // print_mem((void*)base, 24, "des");
 
+#ifdef CONFIG_ARCH_X64
+    int idx = 0;
+    g_gdtr.gdt_max_offset += 8;
+    idx = (g_gdtr.gdt_max_offset / 8) - 1;
+    build_x64_r0_cs_desc(&g_gdt[idx]); //r0代码段描述符
+
+    g_gdtr.gdt_max_offset += 8;
+    idx = (g_gdtr.gdt_max_offset / 8) - 1;
+    build_x64_r0_ds_desc(&g_gdt[idx]); //r0数据段描述符
+
+#else
     /* 新增段描述符 */
     int idx = 0;
     g_gdtr.gdt_max_offset += 8;
@@ -113,7 +173,7 @@ int gdt_init()
     g_gdtr.gdt_max_offset += 8;
     idx = (g_gdtr.gdt_max_offset / 8) - 1;
     build_tss_segment_desc(&g_gdt[idx]); //tss任务段描述符
-    
+#endif /* CONFIG_ARCH_X64 */
 
     g_gdtr.gdt_base_addr = (u32)g_gdt;
     g_gdtr.gdt_max_offset = g_gdtr.gdt_max_offset;

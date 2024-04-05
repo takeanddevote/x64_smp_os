@@ -12,6 +12,9 @@ typedef int s32;
 typedef unsigned int size_t;
 typedef signed int ssize_t;
 
+typedef unsigned long long u64;
+typedef signed long long s64;
+
 typedef char bool;
 #define true    1
 #define false   0

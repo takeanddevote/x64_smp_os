@@ -11,13 +11,16 @@
 #include "lib/unistd.h"
 #include "lib/stdio.h"
 #include "asm/asm.h"
+#include "configs/autoconf.h"
 
-
+#ifdef CONFIG_ARCH_X64
 #define FOUR_LEVEL_HEAD_TABLE_ADDR 0x8000
 #define FIRST_PDPT_ADDR 0x9000
 #define FIRST_PDT_ADDR 0xa000
 
 extern void x64_cpu_check();
+
+static unsigned long lsize = 11;
 
 static void prepare_4level_page_table() {
     // 准备4级头表
@@ -51,7 +54,7 @@ static void prepare_4level_page_table() {
     asm volatile("xchg bx, bx; mov cr3, ebx"::"b"(four_level_head_table_addr));
 }
 
-static void enter_x64() {
+static void enter_ia32e() {
     prepare_4level_page_table();
 
     // 开启物理地址扩展功能：PAE cr4.pae = 1
@@ -63,6 +66,7 @@ static void enter_x64() {
     // 开启分页 cr0.pg = 1（必须在做完上面两步才能开启分页，否则会出错
     asm volatile("mov eax, cr0; or eax, 0x80000000; mov cr0, eax;");
 }
+#endif /* CONFIG_ARCH_X64 */
 
 /* 32位保护模式下，用户态 */
 void user_func()
@@ -77,13 +81,16 @@ int kernel_main()
 {   
     console_init();
     printk("enter kernel main......\n");
+#ifdef CONFIG_ARCH_X64
     check_x64_support();
-    enter_x64();
-    BOCHS_DEBUG_BREAKPOINT
-    BOCHS_DEBUG_BREAKPOINT
+    enter_ia32e();
+    gdt_init();
+    enter_x64_mode();
+
     if(!check_ia32e_status()) {
         printk("\nEnter IA-32e mode fail.\n");
     }
+#endif
 
     while(1); 
 }

@@ -1,4 +1,9 @@
 
-build := 
+build := -f $(srctree)/scripts/Makefile.build -C
 
 delete_last_slash = $(patsubst %/,%,$(1))
+
+
+ensure_dir_exist = $(if $(wildcard $(1)),,$(shell mkdir -p $(1)))
+ensure_file_exist = $(if $(wildcard $(1)),,$(shell touch $(1)))
+ensure_file_exist_clean = $(if $(wildcard $(1)),,$(shell touch $(1); cat /dev/null > $(1)))
