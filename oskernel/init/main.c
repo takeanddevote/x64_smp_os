@@ -52,14 +52,14 @@ static void prepare_4level_page_table() {
     *(pdt_addr + 2) = 0x200000 | 0x83;
     *(pdt_addr + 3) = 0;
 
-    asm volatile("xchg bx, bx; mov cr3, ebx"::"b"(four_level_head_table_addr));
+    asm volatile("mov cr3, ebx"::"b"(four_level_head_table_addr));
 }
 
 static void enter_ia32e() {
     prepare_4level_page_table();
 
     // 开启物理地址扩展功能：PAE cr4.pae = 1
-    asm volatile("xchg bx, bx; mov eax, cr4; bts eax, 5; mov cr4, eax;");
+    asm volatile("mov eax, cr4; bts eax, 5; mov cr4, eax;");
 
     // 设置型号专属寄存器IA32_EFER.LME，允许IA_32e模式
     asm volatile("mov ecx, 0x0c0000080; rdmsr; bts eax, 8; wrmsr");
@@ -86,11 +86,11 @@ int kernel_main()
     check_x64_support();
     enter_ia32e();
     gdt_init();
-    enter_x64_mode();
-
     if(!check_ia32e_status()) {
         printk("\nEnter IA-32e mode fail.\n");
     }
+    BOCHS_DEBUG_BREAKPOINT
+    enter_x64_mode();
 #endif
 
     while(1); 

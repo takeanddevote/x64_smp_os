@@ -29,6 +29,7 @@ all: scripts/link-firmware.sh $(KBUILD_SRC) boot loader
 	$(Q) dd if=$(KBUILD_SRC)/oskernel/boot/built-in.o of=$(KBUILD_SRC)/$(HD_IMG_NAME) bs=512 seek=0 count=1 conv=notrunc > /dev/null 2>&1
 	$(Q) dd if=$(KBUILD_SRC)/oskernel/loader/built-in.o of=$(KBUILD_SRC)/$(HD_IMG_NAME) bs=512 seek=1 count=2 conv=notrunc > /dev/null 2>&1
 	$(Q) dd if=${KBUILD_SRC}/$(TARGET).bin of=$(KBUILD_SRC)/$(HD_IMG_NAME) bs=512 seek=3 count=50 conv=notrunc > /dev/null 2>&1
+	$(Q) dd if=${KBUILD_SRC}/$(TARGET)_x64.bin of=$(KBUILD_SRC)/$(HD_IMG_NAME) bs=512 seek=54 count=200 conv=notrunc > /dev/null 2>&1
 	$(Q) echo "\nbuild "${HD_IMG_NAME}" success......"
 
 PHONY += boot
@@ -52,14 +53,35 @@ qemu: all
 ifeq ($(ARCH),X86)
 	$(Q) qemu-system-i386 -m 32M -boot c -hda $(KBUILD_SRC)$(HD_IMG_NAME)
 else ifeq ($(ARCH),X64)
-	$(Q) qemu-system-x86_64 -m 32M -boot c -cpu Opteron_G5 -hda $(KBUILD_SRC)$(HD_IMG_NAME)
+	$(Q) qemu-system-x86_64 \
+    	-m 32M \
+    	-boot c \
+		-cpu Nehalem	\
+    	-hda $(KBUILD_SRC)$(HD_IMG_NAME) 
+endif
+
+PHONY += gdbqemu
+gdbqemu: all
+ifeq ($(ARCH),X86)
+	$(Q) qemu-system-i386 \
+    	-m 32M \
+    	-boot c \
+    	-hda $(KBUILD_SRC)$(HD_IMG_NAME) \
+    	-s -S -nographic
+else ifeq ($(ARCH),X64)
+	$(Q) qemu-system-x86_64 \
+    	-m 32M \
+    	-boot c \
+		-cpu Nehalem	\
+    	-hda $(KBUILD_SRC)$(HD_IMG_NAME) \
+    	-s -S 
 endif
 
 PHONY += test
 test: $(KBUILD_SRC)
 	@ echo "test"
 
-bochs: $(if $(filter X64,$(ARCH)),x64_kernel,)
+bochs: all $(if $(filter X64,$(ARCH)),x64_kernel,)
 	bochs -q -f bochsrc
 
 PHONY += clean

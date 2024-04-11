@@ -11,7 +11,7 @@ vector_info_3: times 18 db 0x00
 
 
 
-[SECTION .head.text]
+[SECTION .text]
 [BITS 32]
 
 extern printk
@@ -78,14 +78,18 @@ extern KERNEL_X64_CODE_SECTOR
 extern KERNEL_X64_DATA_SECTOR
 global enter_x64_mode
 enter_x64_mode:
-
-    push KERNEL_X64_CODE_SECTOR
+    mov eax, [KERNEL_X64_CODE_SECTOR]
+    push eax
     push 0x100000   ; eip x64内核的start address
 
-    mov eax, KERNEL_X64_DATA_SECTOR
-    mov ds, ax
-    mov es, ax
-    mov ss, ax
-    mov fs, ax
-    mov gs, ax
+    ; xor eax, eax
+    ; mov eax, [KERNEL_X64_DATA_SECTOR]
+    ; mov ds, ax
+    ; mov es, ax
+    ; mov ss, ax
+    ; mov fs, ax
+    ; mov gs, ax
+
+    xchg bx,bx
+    xchg bx,bx
     retf ; retf 长跳转返回，从栈中弹出：eip、cs

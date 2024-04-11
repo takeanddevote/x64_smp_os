@@ -174,9 +174,11 @@ int gdt_init()
     build_tss_segment_desc(&g_gdt[idx]); //tss任务段描述符
 #endif /* CONFIG_ARCH_X64 */
 
+    BOCHS_DEBUG_BREAKPOINT
+    BOCHS_DEBUG_BREAKPOINT
     g_gdtr.gdt_base_addr = (u32)g_gdt;
     g_gdtr.gdt_max_offset = g_gdtr.gdt_max_offset;
 
     __asm__ volatile("lgdt g_gdtr;");
-    __asm__ volatile("ltr ax;"::"a"(TSS_SECTOR)); //设置tss段选择子到tr寄存器。注意这里需要先确保tss段描述符已经设置进gdt了，并已经设置gdtr寄存器了（先定义资源），再设置ltr（使用资源）。
+    // __asm__ volatile("ltr ax;"::"a"(TSS_SECTOR)); //设置tss段选择子到tr寄存器。注意这里需要先确保tss段描述符已经设置进gdt了，并已经设置gdtr寄存器了（先定义资源），再设置ltr（使用资源）。
 }

@@ -17,7 +17,7 @@ while getopts ":ks" opt; do
 done
 
 if $has_k_option == "true"; then
-    pid=$(ps -aux | grep 'qemu-system-i386' | grep -v 'grep' | awk '{print $2}')
+    pid=$(ps -aux | grep 'qemu-system' | grep -v 'grep' | awk '{print $2}')
     if [ -n "$pid" ]; then
         echo "kill qemu $pid success..."
         kill $pid
@@ -25,9 +25,9 @@ if $has_k_option == "true"; then
         echo "qemu not running..."
     fi
 elif $has_s_option == "true"; then
-    make clean; make gdbqemu
+    make gdbqemu
 else
-    gdb -ex "target remote localhost:1234" -ex "b kernel_main" -ex "c" build/init/kernel.elf
+    gdb -ex "target remote localhost:1234" -ex "b kernel_main" -ex "c" .build/vmlinux
 fi
 
 

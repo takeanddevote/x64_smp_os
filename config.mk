@@ -42,7 +42,7 @@ OBJDUMP	:= $(CROSS_COMPILE)objdump
 
 # 头文件路径
 LINUXINCLUDRE := -I$(srctree)/oskernel/include
-KBUILD_LDS := ./vmlinux.lds
+KBUILD_LDS := $(srctree)/vmlinux.lds
 
 # 配置编译参数
 CFLAGS := $(DEBUG) 

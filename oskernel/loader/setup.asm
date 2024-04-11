@@ -2,6 +2,7 @@
 [BITS 16]
 [SECTION .data]
 KERNEL_ADDR equ 0x1200
+X64_KERNEL_ADDR equ 0x100000
 
 MEN_ARDS_NUM_ADDR equ 0x1100 ;保存ARDS的个数
 MEN_ARDS_ADDR equ 0x1102 ;保存N个ARDS
@@ -129,6 +130,12 @@ protected_mode:
     mov ecx, 3
     mov bl, 50
     call read_hd
+
+    mov edi, X64_KERNEL_ADDR
+    mov ecx, 54
+    mov bl, 200
+    call read_hd
+    
 
     ; xchg bx, bx
     jmp CODE_SECTOR:KERNEL_ADDR
