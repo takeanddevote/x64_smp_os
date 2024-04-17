@@ -10,6 +10,8 @@ KBUILD_SRC := $(srctree)/.build/
 # 配置可执行程序名字
 TARGET := vmlinux_x64
 
+LINUXINCLUDRE := -I$(srctree)/oskernel/x64_kenerl/include
+
 # 配置编译参数
 CFLAGS := $(DEBUG) 
 CFLAGS += $(LINUXINCLUDRE)

@@ -1,1 +1,5 @@
-obj-y += asm/
+obj-y := asm/
+obj-y += driver/
+obj-y += init/
+obj-y += kernel/
+obj-y += libs/
