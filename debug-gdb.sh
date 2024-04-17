@@ -27,7 +27,7 @@ if $has_k_option == "true"; then
 elif $has_s_option == "true"; then
     make gdbqemu
 else
-    gdb -ex "target remote localhost:1234" -ex "b kernel_main" -ex "c" .build/vmlinux
+    gdb -ex "target remote localhost:1234" -ex "b x64_kernel_main" -ex "c" .build/vmlinux_x64
 fi
 
 

@@ -1,3 +1,4 @@
+#include "driver/tty.h"
 
 
 int x64_kernel_main()
