@@ -10,7 +10,7 @@ KBUILD_SRC := $(srctree)/.build/
 # 配置可执行程序名字
 TARGET := vmlinux_x64
 
-LINUXINCLUDRE := -I$(srctree)/oskernel/x64_kenerl/include
+LINUXINCLUDRE := -I$(srctree)/x64_kenerl/include
 
 # 配置编译参数
 CFLAGS := $(DEBUG) 
@@ -33,7 +33,7 @@ export MAKE Q srctree KBUILD_SRC KBUILD_LDS
 
 _bulid:
 	$(Q) $(MAKE) $(build) ./
-	$(Q) $(LD) $(LDFLAGS) -o $(KBUILD_SRC)/$(TARGET) $(KBUILD_SRC)/oskernel/x64_kenerl/built-in.o -T $(srctree)/vmlinux_x64.lds
+	$(Q) $(LD) $(LDFLAGS) -o $(KBUILD_SRC)/$(TARGET) $(KBUILD_SRC)/x64_kenerl/built-in.o -T $(srctree)/vmlinux_x64.lds
 	$(Q) echo "LD 	 built-in.o    "$(TARGET)
 
 	$(Q) $(OBJCOPY) -O binary $(KBUILD_SRC)/$(TARGET) $(KBUILD_SRC)/$(TARGET).bin
