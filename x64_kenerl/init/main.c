@@ -11,7 +11,8 @@ int x64_kernel_main()
     // console_write(str, sizeof(str));
 
     printk("%d %d %d.\n", 1, 2, 3);
-    // printk("%s %d %d %s %d %d %d %d.\n", "nihao", 2, 3, "buhao", 5, 6, 7, 8);
+    printk("%d.\n", 1);
+    printk("%s %c %d %s %d %d %d %d.\n", "nihao", 49, 3, "buhao", 5, 6, 7, 8);
     while(1);
     
 

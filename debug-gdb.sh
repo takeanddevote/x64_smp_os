@@ -27,7 +27,7 @@ if $has_k_option == "true"; then
 elif $has_s_option == "true"; then
     make gdbqemu
 else
-    gdb -ex "target remote localhost:1234" -ex "b printk" -ex "b printk.outStr" -ex "c" .build/vmlinux_x64
+    gdb -ex "target remote localhost:1234" -ex "b printk" -ex "b printk" -ex "c" .build/vmlinux_x64
 fi
 
 
