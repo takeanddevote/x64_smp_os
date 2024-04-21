@@ -1,24 +1,26 @@
 #include "driver/tty.h"
 #include "linux/printk.h"
+#include "linux/mm.h"
 
 
 extern char g_printBuffer;
 int x64_kernel_main()
 {
     console_init();
-    // printk("enter x64_kernel_main success.... %d\n", 34);
-    // char str[] = "enter x64_kernel_main success...";
-    // console_write(str, sizeof(str));
+    mm_init();
 
-    printk("%d %d %d.\n", 1, 2, 3);
-    printk("%d.\n", 1);
-    printk("%s %c %d %s %d %d %d %d.\n", "nihao", 49, 3, "buhao", 5, 6, 7, 8);
+    void *p1 = get_free_page();
+    void *p2 = get_free_page();
+    void *p3 = get_free_page();
+    printk("%p.\n", p1);
+    printk("%p.\n", p2);
+    printk("%p.\n", p3);
+
+    free_page(p2);
+    p2 = get_free_page();
+    printk("%p.\n", p2);
+
     while(1);
-    
-
-    // testIntCall(1,2,3,4,5,6,7,8);
-    // testLongCall((char*)0xfffffffffffffff1, (char*)0xfffffffffffffff2, (char*)0xfffffffffffffff3, (char*)0xfffffffffffffff4,    \
-    //     (char*)0xfffffffffffffff5, (char*)0xfffffffffffffff6, (char*)0xfffffffffffffff7, (char*)0xfffffffffffffff8);
 
     return 0;
 }

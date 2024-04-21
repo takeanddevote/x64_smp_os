@@ -1,1 +1,2 @@
-obj-y += printk.o
+obj-y := printk.o
+obj-y += phymm.o

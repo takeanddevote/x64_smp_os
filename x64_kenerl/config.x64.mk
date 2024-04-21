@@ -4,6 +4,8 @@ _bulid:
 
 include $(srctree)/scripts/Kbuild.include
 
+DEBUG ?= -g
+
 # 配置中间文件输出目录
 KBUILD_SRC := $(srctree)/.build/
 
