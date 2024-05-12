@@ -34,7 +34,7 @@ static struct bucket_desc *free_bucket_chain;
 struct bucket_desc *construct_free_bucket_chain()
 {
     struct bucket_desc *free_chain = (struct bucket_desc *)get_free_page();
-    printk("free_chain=%p.\n", free_chain);
+    // printk("free_chain=%p.\n", free_chain);
     size_t maxIndex = PAGE_SIZE / sizeof(struct bucket_desc);
     int i = 0;
     for(;i < maxIndex - 1; ++i) {

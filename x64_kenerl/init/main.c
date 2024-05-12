@@ -8,6 +8,7 @@ int x64_kernel_main()
 {
     console_init();
     mm_init();
+    init_idt();
 
     void *p1, *p2, *p3;
     p1 = kmalloc(16);
@@ -16,6 +17,8 @@ int x64_kernel_main()
 
     printk("%p %p %p.\n", p1, p2, p3);
 
+    // asm volatile("xchg %bx, %bx; hlt;");
+    int val = 10 / 0;
     while(1);
 
     return 0;
