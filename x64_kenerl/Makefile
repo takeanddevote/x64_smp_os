@@ -3,3 +3,4 @@ obj-y += driver/
 obj-y += init/
 obj-y += kernel/
 obj-y += libs/
+obj-y += mm/

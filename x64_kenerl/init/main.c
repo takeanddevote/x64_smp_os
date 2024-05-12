@@ -9,16 +9,12 @@ int x64_kernel_main()
     console_init();
     mm_init();
 
-    void *p1 = get_free_page();
-    void *p2 = get_free_page();
-    void *p3 = get_free_page();
-    printk("%p.\n", p1);
-    printk("%p.\n", p2);
-    printk("%p.\n", p3);
+    void *p1, *p2, *p3;
+    p1 = kmalloc(16);
+    p2 = kmalloc(16);
+    p3 = kmalloc(16);
 
-    free_page(p2);
-    p2 = get_free_page();
-    printk("%p.\n", p2);
+    printk("%p %p %p.\n", p1, p2, p3);
 
     while(1);
 

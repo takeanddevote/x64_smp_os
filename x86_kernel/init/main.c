@@ -14,10 +14,18 @@
 #include "asm/asm.h"
 #include "configs/autoconf.h"
 
+
+/* 
+1、一个PLM4表项映射512G、一个PDPTE映射1G、一个PDE映射2M、一个PTE映射4KB。因此对于我们的内核，一个PLM4表项、一个PDPTE表项即可。
+。简单起见直接映射所有内存0-32M
+2、注意虚拟地址分配和物理地址映射的关系。虚拟地址分配是指填充了所属的页表表项，但是还没映射到物理地址（访问虚拟地址会触发缺页异常）。物理地址
+映射是指填充了页表表项下，并且填充了所映射的物理地址。
+3、当前内核是所有进程共享一个虚拟地址空间，即一个页表，即相当于没有
+ */
 #ifdef CONFIG_ARCH_X64
-#define FOUR_LEVEL_HEAD_TABLE_ADDR 0x8000
-#define FIRST_PDPT_ADDR 0x9000
-#define FIRST_PDT_ADDR 0xa000
+#define FOUR_LEVEL_HEAD_TABLE_ADDR 0x90000
+#define FIRST_PDPT_ADDR 0x91000
+#define FIRST_PDT_ADDR 0x92000
 
 extern void x64_cpu_check();
 
@@ -45,13 +53,13 @@ static void prepare_4level_page_table() {
 
     memset(pdt_addr, 0, 4096);
 
-    // 采用2M分页,这里直接填写低端2M内存映射
-    *pdt_addr = 0 | 0x83;
-    *(pdt_addr + 1) = 0;
-
-    *(pdt_addr + 2) = 0x200000 | 0x83;
-    *(pdt_addr + 3) = 0;
-
+    // 采用2M分页,映射0-32M，即需要填充前16个pde。当然实际的进程肯定不会直接映射那么多，而是需要多少映射多少。
+    for (size_t i = 0; i < 16; i++)
+    {
+        *(pdt_addr + i*2 + 0) = i*0x200000 | 0x83;
+        *(pdt_addr + i*2 + 1) = 0;
+    }
+    
     asm volatile("mov cr3, ebx"::"b"(four_level_head_table_addr));
 }
 
