@@ -41,9 +41,9 @@ subdir-b := $(addprefix $(CUR_OUT_PATH)/,$(subdir-b))
 curdir-o := $(addprefix $(CUR_OUT_PATH)/,$(curdir-o))
 curdir-deps  := $(addprefix $(CUR_OUT_PATH)/,$(curdir-deps))
 
-ifneq ($(wildcard $(curdir-deps)),)
-include $(curdir-deps)
-endif
+# ifneq ($(wildcard $(curdir-deps)),)
+include $(wildcard $(curdir-deps))
+# endif
 
 # 默认目标
 __build : $(subdir-n) $(CUR_OUT_PATH)/built-in.o

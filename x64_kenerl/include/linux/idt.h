@@ -40,5 +40,6 @@ typedef struct {
 
 
 extern int init_idt(void);
+void send_eoi(int idt_index);
 
 #endif /* __IDT_H__ */
