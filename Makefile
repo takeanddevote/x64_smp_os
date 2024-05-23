@@ -3,24 +3,56 @@ all:
 
 srctree := $(shell pwd)
 
+CONFIG_SHELL := $(shell if [ -x "$$SHELL" ]; then echo $$SHELL; \
+		else if [ -x /bin/bash ]; then echo /bin/bash; \
+		else echo sh; fi ; fi)
+
+-include configs/auto.conf
+
 
 include config.mk
 include $(srctree)/scripts/Kbuild.include
 
 # 顶层子目录
 obj-y += x86_kernel/
+header-y := configs   #生成的配置头文件目录
 
+buildSrcRoot ?= ./
+PHONY += buildSrc
+buildSrc : $(cfg_dir) $(src_file)
+	$(Q) $(MAKE) $(build_src) $(buildSrcRoot) clean-file=yes
 
-PHONY += $(KBUILD_SRC)
-$(KBUILD_SRC):
+buildIncRoot ?= ./
+PHONY += buildInc
+buildInc : $(cfg_dir) $(inc_file)
+	$(Q) $(MAKE) $(build_inc) $(buildIncRoot) clean-file=yes
+	
+PHONY += buildcfgFile
+buildcfgFile: $(cfg_dir) $(cfg_ini_out)
+	$(Q) $(CONFIG_SHELL) $(srctree)/scripts/cfg-firmware.sh -h $(cfg_ini_out) $(cfg_header_file)
+	$(Q) $(CONFIG_SHELL) $(srctree)/scripts/cfg-firmware.sh -m $(cfg_ini_out) $(cfg_mk_file)
+	
+forEnsureFilesExist := $(inc_file) $(cfg_mk_file) $(cfg_header_file) $(src_file)
+PHONY += $(forEnsureFilesExist)
+$(forEnsureFilesExist):
+	$(call ensure_file_exist,$@)
+	
+forEnsureDirsExist := $(cfg_dir) $(KBUILD_SRC) $(PUBLIC_SRC)
+PHONY += $(forEnsureDirsExist)
+$(forEnsureDirsExist):
 	$(call ensure_dir_exist,$@)
+
+forCheckFilesExist := $(cfg_ini_out)
+PHONY += $(forCheckFilesExist)
+$(forCheckFilesExist):
+	$(call check_file_exist,$@)
 
 # 目标规则
 all: scripts/link-firmware.sh $(KBUILD_SRC) boot loader
 	$(Q) ([ -e $(KBUILD_SRC)/$(HD_IMG_NAME) ] && rm -f $(KBUILD_SRC)/$(HD_IMG_NAME); true)
 	$(Q) $(MAKE) $(build) ./
 	$(Q) $(LD) $(LDFLAGS) -o $(KBUILD_SRC)/$(TARGET) $(KBUILD_SRC)/built-in.o -T $(KBUILD_LDS)
-	$(Q) echo "LD 	 built-in.o    "$(TARGET)
+	$(Q) echo "LD 	 built-in.o	"$(TARGET)
 
 	$(Q) $(OBJCOPY) -O binary ${KBUILD_SRC}/$(TARGET) ${KBUILD_SRC}/$(TARGET).bin
 	$(Q) $(NM) ${KBUILD_SRC}/$(TARGET) | sort > ${KBUILD_SRC}/$(TARGET).map
@@ -54,52 +86,73 @@ ifeq ($(ARCH),X86)
 	$(Q) qemu-system-i386 -m 32M -boot c -hda $(KBUILD_SRC)$(HD_IMG_NAME)
 else ifeq ($(ARCH),X64)
 	$(Q) qemu-system-x86_64 \
-    	-m 32M \
-    	-boot c \
+		-m 32M \
+		-boot c \
 		-cpu Nehalem	\
-    	-hda $(KBUILD_SRC)$(HD_IMG_NAME) 
+		-hda $(KBUILD_SRC)$(HD_IMG_NAME) 
 endif
 
 PHONY += gdbqemu
 gdbqemu: all
 ifeq ($(ARCH),X86)
 	$(Q) qemu-system-i386 \
-    	-m 32M \
-    	-boot c \
-    	-hda $(KBUILD_SRC)$(HD_IMG_NAME) \
-    	-s -S -nographic
+		-m 32M \
+		-boot c \
+		-hda $(KBUILD_SRC)$(HD_IMG_NAME) \
+		-s -S -nographic
 else ifeq ($(ARCH),X64)
 	$(Q) qemu-system-x86_64 \
-    	-m 32M \
-    	-boot c \
+		-m 32M \
+		-boot c \
 		-cpu Nehalem	\
-    	-hda $(KBUILD_SRC)$(HD_IMG_NAME) \
-    	-s -S 
+		-hda $(KBUILD_SRC)$(HD_IMG_NAME) \
+		-s -S 
 endif
-
-PHONY += test
-test: $(KBUILD_SRC)
-	@ echo "test"
 
 bochs: all $(if $(filter X64,$(ARCH)),x64_kernel,)
 	bochs -q -f bochsrc
 
+
+
+
+PHONY += config old_config _config
+_config: old_config_file := $(cfg_ini_old)
+export old_config_file
+_config: mrproper $(cfg_dir)
+	$(Q) $(CONFIG_SHELL) $(srctree)/scripts/cfg-firmware.sh $(option) $(cfg_ini) $(cfg_ini_out)
+
+config: option = -c
+config: _config buildcfgFile
+
+old_config: option = -o
+old_config: _config buildcfgFile
+
 PHONY += clean
 PHONY += distclean
 PHONY += mrproper
+
 clean:
 	$(Q) -rm -f $(shell find -name "*.o")
 	$(Q) -rm -f $(KBUILD_SRC)/$(TARGET)
-	$(Q) true
+	$(Q) /bin/true
 
 distclean:
-	$(Q) - rm -f $(shell [ -e $(KBUILD_SRC) ] && find $(KBUILD_SRC) -name "*.o")
-	$(Q) - rm -f $(shell [ -e $(KBUILD_SRC) ] && find $(KBUILD_SRC) -name "*.d")
-	$(Q) - rm -f $(KBUILD_SRC)/$(TARGET)
-	$(Q) true
+	$(Q) -rm -f $(shell [ -e $(KBUILD_SRC) ] && find $(KBUILD_SRC) -name "*.o")
+	$(Q) -rm -f $(shell [ -e $(KBUILD_SRC) ] && find $(KBUILD_SRC) -name "*.d")
+	$(Q) -rm -f $(KBUILD_SRC)/$(TARGET)
+	$(Q) /bin/true
 
-mrproper : distclean
-	$(Q) -rm -rf $(KBUILD_SRC)
-	$(Q) true
+mrproper:
+	$(Q) -rm -rf $(KBUILD_SRC) $(cfg_dir) $(PUBLIC_SRC)
+	$(Q) /bin/true
+	
+define help
+	@echo "help"
+endef
 
+PHONY += help
+help:
+	$(Q) $(help)
+
+PHONY += FORCE
 .PHONY : $(PHONY)

@@ -1,0 +1,52 @@
+PHONY += _build
+_build:
+
+c-src-y := 
+obj-y := 
+obj-b := 
+obj-l := 
+clean-file ?= no
+
+prefix := SRC += 
+
+
+include $(srctree)/scripts/makefile/Kbuild.include
+include $(cfg_mk_file)
+include Makefile
+
+ifeq ($(wildcard $(src_file)),)
+$(error ERROR: $(src_file) file does not exist ...)
+endif
+
+ifeq ($(clean-file),yes)
+$(call clean_file,$(src_file))
+prefix := SRC += 
+endif
+
+subdir-h := $(sort $(patsubst %/,%,$(filter %/,$(strip $(obj-y)))))
+
+c-src-y := $(strip $(c-src-y))
+
+ifneq ($(c-src-y),)
+
+_build : $(c-src-y) $(subdir-h)
+	$(Q) true
+	
+PHONY += $(c-src-y)
+$(c-src-y) : var = $(prefix) $(shell pwd)/$@
+$(c-src-y) : file = $(src_file)
+$(c-src-y) : 
+	$(call write_variable_to_file,$(var),$(file))
+
+else
+
+_build: $(subdir-h)
+	$(Q) true
+
+endif
+
+PHONY += $(subdir-h)
+$(subdir-h):
+	$(Q) $(MAKE) $(build_src) $@ clean-file=no
+	
+.PHONY : $(PHONY)

@@ -1,9 +1,33 @@
 
+cfg_dir := $(srctree)/configs
+cfg_ini := $(srctree)/platform/config.proj.ini
+cfg_ini_old := $(srctree)/.config.old
+cfg_ini_out := $(srctree)/.config
+
+
 build := -f $(srctree)/scripts/Makefile.build -C
+cfg_dir ?= $(srctree)/configs
+
+inc_file ?= $(cfg_dir)/auto.inc
+src_file ?= $(cfg_dir)/auto.src
+build_inc := -f $(srctree)/scripts/Makefile.inc -C
+build_src := -f $(srctree)/scripts/Makefile.src -C
+sh_lib := $(srctree)/scripts/ShLib.sh
+
+cfg_mk_file := $(cfg_dir)/auto.conf
+cfg_header_file := $(cfg_dir)/autoconf.h
+
+shebang = \#!/bin/bash
+
 
 delete_last_slash = $(patsubst %/,%,$(1))
 
+write_variable_to_file = $(shell echo "$(1)" >> "$(2)")
 
+clean_file = $(shell cat /dev/null > $(1))
+
+ensure_file_exist = $(Q) [ -e $(1) ] || touch $(1)
+ensure_file_exist_and_clean = $(Q) ([ -e $(1) ] || touch $(1)) && cat /dev/null > $(1)
 ensure_dir_exist = $(if $(wildcard $(1)),,$(shell mkdir -p $(1)))
-ensure_file_exist = $(if $(wildcard $(1)),,$(shell touch $(1)))
+check_file_exist = $(Q) [ -e $(1) ] || (echo "[ERROR] $(1) not existed."; /bin/false)
 ensure_file_exist_clean = $(if $(wildcard $(1)),,$(shell touch $(1); cat /dev/null > $(1)))
