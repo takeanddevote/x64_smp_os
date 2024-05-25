@@ -23,7 +23,7 @@ void send_eoi(int idt_index) {
 }
 
 void clock_interrupt_handler() {
-    printk("clock!\n");
+    // printk("clock!\n");
 
     send_eoi(0x20);
 }

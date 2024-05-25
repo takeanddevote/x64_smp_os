@@ -75,3 +75,15 @@ int va_num(char *format)
     }
     return num;
 }
+
+
+void print_hex(unsigned char *buf, int len)
+{
+    int i = 0; 
+    if(len == 0)
+        return;
+    for(i = 0; i < len; i++){
+        printk("%.2x", buf[i]);
+    }
+    printk(" %d.\n", len);
+}

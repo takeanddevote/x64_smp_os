@@ -12,6 +12,7 @@
 #define false 0
 
 typedef unsigned int size_t;
+typedef signed int   ssize_t;
 
 typedef long long int64;
 
@@ -24,5 +25,13 @@ typedef unsigned short u16;
 typedef unsigned int u32;
 typedef unsigned long long u64;
 
+typedef signed char s8;
+typedef signed short s16;
+typedef signed int s32;
+typedef signed long long s64;
+
+typedef unsigned char uint8_t;
+typedef unsigned int  uint32_t;
+typedef unsigned long long  uint64_t;
 
 #endif /* __TYPE_H__ */
