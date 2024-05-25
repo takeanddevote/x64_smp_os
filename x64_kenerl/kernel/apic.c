@@ -63,6 +63,27 @@ static void *get_rsdp_address(const char *data, size_t msize)
     return NULL;
 }
 
+u8 sum(u8 *data, size_t len)
+{
+    u8 sum = 0;
+    for(size_t i = 0; i < len; ++i) {
+        sum += data[i];
+    }
+    return sum;
+}
+
+static void print_rsdp_info(rsdp_t *rsdp)
+{
+    printk("************RSDP************\n");
+    printk("checksum: %x tsum: %x.\n", rsdp->checksum, sum((u8*)rsdp, 20));
+    printk("OEMID: %s.\n", rsdp->oem_id);
+    printk("revision: %d %s.\n", rsdp->revision, rsdp->revision == 0 ? "ACPI 1.0" : "ACPI 2.0");
+    printk("rsdtAddress: 0x%x.\n", rsdp->rsdt_address);
+    printk("length: %d.\n", rsdp->length);
+    printk("xsdtAddress: 0x%x.\n", rsdp->xsdt_address);
+    printk("externed checkSum: %x %x.\n", rsdp->extended_checksum, sum((u8*)rsdp, sizeof(rsdp_t)));
+    printk("****************************\n");
+}
 
 int apic_init(void)
 {
@@ -78,6 +99,6 @@ int apic_init(void)
         return -1;
     }
     log("find rsdp in %x.\n", p_rsdp);
-
+    print_rsdp_info(p_rsdp);
     return 0;
 }
