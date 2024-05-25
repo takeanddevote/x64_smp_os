@@ -15,7 +15,7 @@ include $(srctree)/scripts/Kbuild.include
 
 # 顶层子目录
 obj-y += x86_kernel/
-header-y := configs   #生成的配置头文件目录
+# header-y := configs   #生成的配置头文件目录
 
 buildSrcRoot ?= ./
 PHONY += buildSrc
