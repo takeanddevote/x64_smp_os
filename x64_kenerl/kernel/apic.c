@@ -12,6 +12,8 @@
 #define BDA_RSDP_ADDRESS_END    0x100000
 #define RSDP_SIGNATURE          "RSD PTR"
 
+static apic_info_t g_apicInfo;
+
 static void *get_rsdp_address(const char *data, size_t msize)
 {
     int state = 0;
@@ -88,6 +90,73 @@ static void print_rsdp_info(rsdp_t *rsdp)
     printk("****************************\n");
 }
 
+static u32 print_rsdt_info(rsdt_t *rsdt)
+{
+    printk("************RSDT************\n");
+    char signature[5] = {0};
+    memcpy(signature, rsdt->signature, 4);
+    printk("signature: %s.\n", signature);
+    printk("length: %d.\n", rsdt->length);
+    printk("revision: %d.\n", rsdt->revision);
+    printk("checksum: %d tsum %d.\n", rsdt->checksum, sum((u8*)rsdt, rsdt->length));
+    printk("****************************\n");
+    return 0;
+}
+
+static u32 print_madt_info(madt_t *madt)
+{
+    printk("************MADT************\n");
+    char signature[5] = {0};
+    memcpy(signature, madt->signature, 4);
+    printk("signature: %s.\n", signature);
+    printk("length: %d.\n", madt->length);
+    printk("revision: %d.\n", madt->revision);
+    printk("checksum: %d tsum %d.\n", madt->checksum, sum((u8*)madt, madt->length));
+    printk("****************************\n");
+    return 0;
+}
+
+static u32 print_interrupt_controller_info(madt_t *madt)
+{
+    printk("************CONTROLLER************\n");
+    printk("local apic address: 0x%x.\n", madt->localInterruptControllerAddress);
+    u64 start = (u64)madt->interruptControllerStructure;
+    u64 end = madt->length + (u64)madt;
+    u64 pos = start;
+    local_apic_t *local_apic = NULL;
+    io_apic_t *io_apic = NULL;
+
+    g_apicInfo.localInterruptControllerAddress = madt->localInterruptControllerAddress;
+
+    while(1) {
+        it_ctrl_header_t *header = (it_ctrl_header_t *)pos;
+        switch(header->type) {
+            case 0: //local APIC
+                local_apic = (local_apic_t *)pos;
+                printk("local apic: id %d.\n", local_apic->apicId);
+                g_apicInfo.lapic[g_apicInfo.lapic_num++] = *local_apic;
+                break;
+
+            case 1: //io APIC
+                io_apic = (io_apic_t *)pos;
+                g_apicInfo.ioapic[g_apicInfo.ioapic_num++] = *io_apic;
+                printk("io apic: id %d.\n", io_apic->ioApicId);
+                break;
+        }
+        pos += (u64)header->length;
+        if(pos >= end)
+            break;
+    }
+    printk("****************************\n");
+    return 0;
+}
+
+uint64_t read_apic_base() {
+    uint32_t edx, eax;
+    asm volatile ("rdmsr" : "=a"(eax), "=d"(edx) : "c"(0x1B));
+    return ((uint64_t)edx << 32) | (eax & 0xFFFFF000);
+}
+
 int apic_init(void)
 {
     rsdp_t *p_rsdp = NULL;
@@ -119,7 +188,24 @@ int apic_init(void)
             err("remap rsdt address 0x%x fail.\n", p_rsdp->rsdt_address);
             return -1;
         }
-        print_nstring_label(vrt, 4, "RSDT");
+        rsdt_t *p_rsdt = (rsdt_t *)vrt;
+        print_rsdt_info(p_rsdt);
+
+        madt_t *madt = NULL;
+        int entryNums = (p_rsdt->length - sizeof(rsdt_t)) / 4;
+        for(int i = 0; i < entryNums; ++i) {
+            if(!memcmp((void *)p_rsdt->entry[i], "APIC", 4)) {
+                madt = (madt_t *)p_rsdt->entry[i];
+                break;
+            }
+        }
+        if(!madt) {
+            err("find no MADT.\n");
+            return -1;  
+        }
+
+        // print_madt_info(madt);
+        print_interrupt_controller_info(madt);
 
     } else {
         printk("not support ACPI 2.0.\n");
@@ -127,4 +213,59 @@ int apic_init(void)
     }
 
     return 0;
+}
+
+#define LAPIC_ICR_OFFSET_L      0x300
+#define LAPIC_ICR_OFFSET_H      0x310
+
+bool check_IPI_success()
+{
+    u64 base = g_apicInfo.localInterruptControllerAddress;
+    lapic_ICR_l_t *icr_val_l = (lapic_ICR_l_t *)(base + LAPIC_ICR_OFFSET_L);
+    debug("status %d.\n", icr_val_l->delivery_status);
+    return !icr_val_l->delivery_status;
+}
+
+int ap_init(void)
+{
+    //建立虚拟地址映射才能访问
+    u64 base = ioremap_nocache(g_apicInfo.localInterruptControllerAddress, PAGE_SIZE); 
+    u32 *ICR_L = (u32 *)(base + LAPIC_ICR_OFFSET_L);
+    u32 *ICR_H = (u32 *)(base + LAPIC_ICR_OFFSET_H);
+    
+    lapic_ICR_l_t icr_val_l = {0};
+    lapic_ICR_h_t icr_val_h = {0};
+
+    // INIT消息
+    icr_val_l.delivery_mode = 0b101;
+    icr_val_l.destination_shortland = 0b11;
+    *ICR_H = *((u32 *)&icr_val_h);
+    *ICR_L = *((u32 *)&icr_val_l);
+    if(!check_IPI_success()) {
+        err("bsp apic send init IPI fail.\n");
+        return -1;
+    }
+
+    // SIPI消息
+    memset(&icr_val_l, 0, sizeof(icr_val_l));
+    icr_val_l.delivery_mode = 0b110;
+    icr_val_l.destination_shortland = 0b11;
+    *ICR_H = *((u32 *)&icr_val_h);
+    *ICR_L = *((u32 *)&icr_val_l);
+    if(!check_IPI_success()) {
+        err("bsp apic send SIPI fail.\n");
+        return -1;
+    }
+
+    // SIPI消息
+    memset(&icr_val_l, 0, sizeof(icr_val_l));
+    icr_val_l.delivery_mode = 0b101;
+    icr_val_l.destination_shortland = 0b11;
+    *ICR_H = *((u32 *)&icr_val_h);
+    *ICR_L = *((u32 *)&icr_val_l);
+    if(!check_IPI_success()) {
+        err("bsp apic send SIPI fail.\n");
+        return -1;
+    }
+
 }

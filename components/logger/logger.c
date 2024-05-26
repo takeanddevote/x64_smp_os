@@ -21,3 +21,13 @@ void print_nstring_label(unsigned char *buf, int len, char *label)
     memcpy(str, buf, len);
     p_printf("[%s]:%s.\n", label, str);
 }
+
+void print_nstring(unsigned char *buf, int len)
+{
+    char str[100] = {0};
+
+    if(len == 0)
+        return;
+    memcpy(str, buf, len);
+    p_printf("%s.\n", str);
+}

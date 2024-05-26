@@ -48,6 +48,7 @@ static void *_arch_ioremap_nocache(ptrUint_t align_addr, int cout)
 /* 
 1、简单起见，一一映射，如果内核高位映射，则加偏移错位映射。
 2、目前内核采用2M页映射。
+3、TODO：如果物理地址靠近2M页的末尾，就有bug。后续参照linux使用vmalloc分配虚拟地址。
  */
 void *ioremap_nocache(ptrUint_t phys_addr, unsigned long size)
 {

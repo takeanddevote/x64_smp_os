@@ -4,6 +4,7 @@
 
 void print_hex(unsigned char *buf, int len);
 void print_nstring_label(unsigned char *buf, int len, char *label);
+void print_nstring(unsigned char *buf, int len);
 
 #define debugsit { p_printf("[%s]", __func__); p_printf("[%d].\n", __LINE__); }
 

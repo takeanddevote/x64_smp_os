@@ -88,7 +88,7 @@ else ifeq ($(ARCH),X64)
 	$(Q) qemu-system-x86_64 \
 		-m 32M \
 		-boot c \
-		-cpu Nehalem	\
+		-cpu Nehalem -smp cores=1,threads=4	\
 		-hda $(KBUILD_SRC)$(HD_IMG_NAME) 
 endif
 

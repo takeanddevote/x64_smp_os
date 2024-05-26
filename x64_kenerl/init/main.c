@@ -12,16 +12,8 @@ int x64_kernel_main()
     mm_init();
     init_idt();
     apic_init();
-
-    // void *p1, *p2, *p3;
-    // p1 = kmalloc(16);
-    // p2 = kmalloc(16);
-    // p3 = kmalloc(16);
-
-    // printk("%p %p %p.\n", p1, p2, p3);
-
-    // asm volatile("xchg %bx, %bx; hlt;");
-    // int val = 10 / 0;
+    ap_init();
+    
     debugsit
     while(1);
 

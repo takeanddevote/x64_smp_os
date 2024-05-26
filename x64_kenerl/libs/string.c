@@ -83,16 +83,15 @@ char *strrchr(const char *str, int ch)
     }
 }
 
-int memcmp(const void *lhs, const void *rhs, size_t count)
+int memcmp(const void *cs, const void *ct, size_t count)
 {
-    char *lptr = (char *)lhs;
-    char *rptr = (char *)rhs;
-    while (*lptr == *rptr && count-- > 0)
-    {
-        lptr++;
-        rptr++;
-    }
-    return *lptr < *rptr ? -1 : *lptr > *rptr;
+	const unsigned char *su1, *su2;
+	int res = 0;
+
+	for (su1 = cs, su2 = ct; 0 < count; ++su1, ++su2, count--)
+		if ((res = *su1 - *su2) != 0)
+			break;
+	return res;
 }
 
 void *memset(void *dest, int ch, size_t count)
