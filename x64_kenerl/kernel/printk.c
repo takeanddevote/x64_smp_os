@@ -62,7 +62,7 @@ int printk(char *format, ...);
   40051f:	c7 45 18 08 00 00 00 	mov    DWORD PTR [rbp+0x18],0x8
 */
 
-
+#include "linux/mm.h"
 
 int va_num(char *format)
 {
@@ -74,16 +74,4 @@ int va_num(char *format)
         p++;
     }
     return num;
-}
-
-
-void print_hex(unsigned char *buf, int len)
-{
-    int i = 0; 
-    if(len == 0)
-        return;
-    for(i = 0; i < len; i++){
-        printk("%.2x", buf[i]);
-    }
-    printk(" %d.\n", len);
 }

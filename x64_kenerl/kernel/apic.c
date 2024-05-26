@@ -1,7 +1,10 @@
 #include "linux/apic.h"
 #include "linux/type.h"
 #include "linux/printk.h"
+#include "linux/io.h"
+#include "linux/mm.h"
 #include "libs/string.h"
+#include "logger.h"
 
 #define EBDA_RSDP_ADDRESS       0x40E
 #define EBDA_RSDP_ADDRESS_END   0x80E
@@ -100,5 +103,28 @@ int apic_init(void)
     }
     log("find rsdp in %x.\n", p_rsdp);
     print_rsdp_info(p_rsdp);
+
+    if(p_rsdp->revision == 0) {
+        if(sum((u8*)p_rsdp, 20) != 0) {
+            printk("rsdp check sum fail.\n");
+            return -1;
+        }
+        /* 
+            1、检测的rsdt的地址：0x1fe16ee 注意这是物理地址，虚拟地址无所谓。该地址所对应的页表项没有分配，因此需要先建立页表映射才能访问。
+                且这个地址所在的页面不能进行缓存，即要写通。
+            2、简单起见，0x1fe16ee直接映射到0x1fe16ee上
+        */
+        void *vrt = ioremap_nocache(p_rsdp->rsdt_address, PAGE_SIZE);
+        if(!vrt) {
+            err("remap rsdt address 0x%x fail.\n", p_rsdp->rsdt_address);
+            return -1;
+        }
+        print_nstring_label(vrt, 4, "RSDT");
+
+    } else {
+        printk("not support ACPI 2.0.\n");
+        return -1;
+    }
+
     return 0;
 }

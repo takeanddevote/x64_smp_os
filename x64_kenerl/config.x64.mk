@@ -12,7 +12,10 @@ KBUILD_SRC := $(srctree)/.build/
 # 配置可执行程序名字
 TARGET := vmlinux_x64
 
-LINUXINCLUDRE := -I$(srctree)/x64_kenerl/include
+LINUXINCLUDRE := -I$(srctree)/x64_kenerl/include	\
+	-I$(srctree)/components/	\
+	-I$(srctree)/components/logger/
+
 
 # 配置编译参数
 CFLAGS := $(DEBUG) 
