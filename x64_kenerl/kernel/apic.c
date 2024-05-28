@@ -222,9 +222,11 @@ bool check_IPI_success()
 {
     u64 base = g_apicInfo.localInterruptControllerAddress;
     lapic_ICR_l_t *icr_val_l = (lapic_ICR_l_t *)(base + LAPIC_ICR_OFFSET_L);
-    debug("status %d.\n", icr_val_l->delivery_status);
+    // debug("status %d.\n", icr_val_l->delivery_status);
     return !icr_val_l->delivery_status;
 }
+
+#define APS_BOOI_CODE_ENTRY 0x9C000
 
 int ap_init(void)
 {
@@ -249,6 +251,7 @@ int ap_init(void)
     // SIPI消息
     memset(&icr_val_l, 0, sizeof(icr_val_l));
     icr_val_l.delivery_mode = 0b110;
+    icr_val_l.vector = APS_BOOI_CODE_ENTRY >> 12;
     icr_val_l.destination_shortland = 0b11;
     *ICR_H = *((u32 *)&icr_val_h);
     *ICR_L = *((u32 *)&icr_val_l);
@@ -260,6 +263,7 @@ int ap_init(void)
     // SIPI消息
     memset(&icr_val_l, 0, sizeof(icr_val_l));
     icr_val_l.delivery_mode = 0b101;
+    icr_val_l.vector = APS_BOOI_CODE_ENTRY >> 12;
     icr_val_l.destination_shortland = 0b11;
     *ICR_H = *((u32 *)&icr_val_h);
     *ICR_L = *((u32 *)&icr_val_l);

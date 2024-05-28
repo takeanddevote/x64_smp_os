@@ -7,7 +7,7 @@ CONFIG_SHELL := $(shell if [ -x "$$SHELL" ]; then echo $$SHELL; \
 		else if [ -x /bin/bash ]; then echo /bin/bash; \
 		else echo sh; fi ; fi)
 
--include configs/auto.conf
+-include $(srctree)/.config
 
 
 include config.mk
@@ -58,10 +58,12 @@ all: scripts/link-firmware.sh $(KBUILD_SRC) boot loader
 	$(Q) $(NM) ${KBUILD_SRC}/$(TARGET) | sort > ${KBUILD_SRC}/$(TARGET).map
 
 	$(Q) bximage -q -hd=16 -func=create -sectsize=512 -imgmode=flat $(KBUILD_SRC)/$(HD_IMG_NAME)
-	$(Q) dd if=$(KBUILD_SRC)/x86_kernel/boot/built-in.o of=$(KBUILD_SRC)/$(HD_IMG_NAME) bs=512 seek=0 count=1 conv=notrunc > /dev/null 2>&1
+	$(Q) dd if=$(KBUILD_SRC)/x86_kernel/boot/boot.o of=$(KBUILD_SRC)/$(HD_IMG_NAME) bs=512 seek=0 count=1 conv=notrunc > /dev/null 2>&1
 	$(Q) dd if=$(KBUILD_SRC)/x86_kernel/loader/built-in.o of=$(KBUILD_SRC)/$(HD_IMG_NAME) bs=512 seek=1 count=2 conv=notrunc > /dev/null 2>&1
 	$(Q) dd if=${KBUILD_SRC}/$(TARGET).bin of=$(KBUILD_SRC)/$(HD_IMG_NAME) bs=512 seek=3 count=50 conv=notrunc > /dev/null 2>&1
 	$(Q) dd if=${KBUILD_SRC}/$(TARGET)_x64.bin of=$(KBUILD_SRC)/$(HD_IMG_NAME) bs=512 seek=54 count=200 conv=notrunc > /dev/null 2>&1
+
+	$(Q) dd if=$(KBUILD_SRC)/x86_kernel/boot/aps_boot.o of=$(KBUILD_SRC)/$(HD_IMG_NAME) bs=512 seek=255 count=1 conv=notrunc > /dev/null 2>&1
 	$(Q) echo "\nbuild "${HD_IMG_NAME}" success......"
 
 PHONY += boot
