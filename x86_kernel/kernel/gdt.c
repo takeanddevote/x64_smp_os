@@ -9,7 +9,7 @@
 #include "configs/autoconf.h"
 
 static gdt_segment_desciptor g_gdt[256];
-static gdtr_value g_gdtr;
+static gdtr_value *g_gdtr = (gdtr_value *)0x9E000;
 
 static tss_t g_tss;
 
@@ -140,45 +140,45 @@ static void build_x64_r0_ds_desc(gdt_segment_desciptor *desc)
 
 int gdt_init()
 {
-    __asm__ volatile("sgdt g_gdtr;");
-    printk("read gdtr %x ", g_gdtr.gdt_max_offset); /* setup.asm中直接把表的大小作为最大偏移了，注意下 */
-    printk("%x.\n", g_gdtr.gdt_base_addr);
+    __asm__ volatile ("sgdt %0" : "=m"(*g_gdtr));
+    printk("read gdtr %x ", g_gdtr->gdt_max_offset); /* setup.asm中直接把表的大小作为最大偏移了，注意下 */
+    printk("%x.\n", g_gdtr->gdt_base_addr);
 
-    gdt_segment_desciptor *base = (gdt_segment_desciptor *)g_gdtr.gdt_base_addr;
-    memcpy(g_gdt, base, g_gdtr.gdt_max_offset);
+    gdt_segment_desciptor *base = (gdt_segment_desciptor *)g_gdtr->gdt_base_addr;
+    memcpy(g_gdt, base, g_gdtr->gdt_max_offset);
     // print_mem((void*)base, 24, "des");
 
 #ifdef CONFIG_ARCH_X64
     int idx = 0;
-    g_gdtr.gdt_max_offset += 8;
-    idx = (g_gdtr.gdt_max_offset / 8) - 1;
+    g_gdtr->gdt_max_offset += 8;
+    idx = (g_gdtr->gdt_max_offset / 8) - 1;
     build_x64_r0_cs_desc(&g_gdt[idx]); //r0代码段描述符
 
-    g_gdtr.gdt_max_offset += 8;
-    idx = (g_gdtr.gdt_max_offset / 8) - 1;
+    g_gdtr->gdt_max_offset += 8;
+    idx = (g_gdtr->gdt_max_offset / 8) - 1;
     build_x64_r0_ds_desc(&g_gdt[idx]); //r0数据段描述符
 
 #else
     /* 新增段描述符 */
     int idx = 0;
-    g_gdtr.gdt_max_offset += 8;
-    idx = (g_gdtr.gdt_max_offset / 8) - 1;
+    g_gdtr->gdt_max_offset += 8;
+    idx = (g_gdtr->gdt_max_offset / 8) - 1;
     build_user_cs_segment_desc(&g_gdt[idx]); //r3代码段描述符
 
-    g_gdtr.gdt_max_offset += 8;
-    idx = (g_gdtr.gdt_max_offset / 8) - 1;
+    g_gdtr->gdt_max_offset += 8;
+    idx = (g_gdtr->gdt_max_offset / 8) - 1;
     build_user_ss_segment_desc(&g_gdt[idx]); //r3数据段描述符
 
-    g_gdtr.gdt_max_offset += 8;
-    idx = (g_gdtr.gdt_max_offset / 8) - 1;
+    g_gdtr->gdt_max_offset += 8;
+    idx = (g_gdtr->gdt_max_offset / 8) - 1;
     build_tss_segment_desc(&g_gdt[idx]); //tss任务段描述符
 #endif /* CONFIG_ARCH_X64 */
 
-    BOCHS_DEBUG_BREAKPOINT
-    BOCHS_DEBUG_BREAKPOINT
-    g_gdtr.gdt_base_addr = (u32)g_gdt;
-    g_gdtr.gdt_max_offset = g_gdtr.gdt_max_offset;
+    // BOCHS_DEBUG_BREAKPOINT
+    // BOCHS_DEBUG_BREAKPOINT
+    g_gdtr->gdt_base_addr = (u32)g_gdt;
+    g_gdtr->gdt_max_offset = g_gdtr->gdt_max_offset;
 
-    __asm__ volatile("lgdt g_gdtr;");
+    __asm__ volatile ("lgdt %0" : : "m"(*g_gdtr));
     // __asm__ volatile("ltr ax;"::"a"(TSS_SECTOR)); //设置tss段选择子到tr寄存器。注意这里需要先确保tss段描述符已经设置进gdt了，并已经设置gdtr寄存器了（先定义资源），再设置ltr（使用资源）。
 }

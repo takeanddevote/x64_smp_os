@@ -226,7 +226,7 @@ bool check_IPI_success()
     return !icr_val_l->delivery_status;
 }
 
-#define APS_BOOI_CODE_ENTRY 0x9C000
+#define APS_BOOI_CODE_ENTRY 0x8000
 
 int ap_init(void)
 {
@@ -272,13 +272,13 @@ int ap_init(void)
         return -1;
     }
 
-    u16 *ap_couts = (u16 *)0x9FB00; //内核采用一一映射，物理地址也是0x9FB00
+    u16 *ap_couts = (u16 *)0x9F000; //内核采用一一映射，物理地址也是0x9FB00
     *ap_couts = 0;
 
     // 等待所有AP核完成初始化
     while(1) {
         if(*ap_couts < g_apicInfo.lapic_num - 1) {
-            log("waiting aps %d, now %d.\n", g_apicInfo.lapic_num - 1, *ap_couts);
+            // log("waiting aps %d, now %d.\n", g_apicInfo.lapic_num - 1, *ap_couts);
             asm volatile("pause;");
         } else {
             break;
