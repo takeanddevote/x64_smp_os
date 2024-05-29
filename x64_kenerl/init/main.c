@@ -4,6 +4,14 @@
 #include "linux/idt.h"
 #include "linux/apic.h"
 
+void x64_ap_main(void)
+{
+    u64 *ptr = (u64 *)0xA000;
+    printk("aps enter c..... 0x%x\n", *ptr);
+
+    while(1);
+}
+
 
 extern char g_printBuffer;
 int x64_kernel_main()

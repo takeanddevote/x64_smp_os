@@ -228,8 +228,12 @@ bool check_IPI_success()
 
 #define APS_BOOI_CODE_ENTRY 0x8000
 
+extern int x64_ap_main(void);
 int ap_init(void)
 {
+    u64 *apJmp = (u64 *)0xA000; //把ap的c入口函数存入内存，ap再读取跳转
+    *apJmp = (u64)x64_ap_main;
+
     //建立虚拟地址映射才能访问
     u64 base = ioremap_nocache(g_apicInfo.localInterruptControllerAddress, PAGE_SIZE); 
     u32 *ICR_L = (u32 *)(base + LAPIC_ICR_OFFSET_L);

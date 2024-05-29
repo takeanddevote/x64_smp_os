@@ -41,7 +41,6 @@ enter_protected_mode:
 
 [BITS 32]
 protected_mode:
-    ; xchg bx, bx
     mov ax, DATA_SECTOR ;把所有的非代码段寄存器都设置为数据段选择子，实际上数据段和代码段重合的，因为gcc编译的c程序是基于平坦模式的。
     mov ds, ax
     mov ss, ax
@@ -49,6 +48,48 @@ protected_mode:
     mov fs, ax
     mov gs, ax
 
+    ; 初始化APs栈
+    mov esp, 0x9000
+    mov ebp, esp
+
+.enter_64_long_mode:
+    ; 启动PAE
+    mov eax, cr4
+    bts eax, 5
+    mov cr4, eax
+
+    ; 加载PML4页表，使用bsp同一个页表，因为APs最终会和bsp运行一套代码。
+    mov eax, 0x90000
+    mov cr3, eax
+
+    ; 长模式使能
+    mov ecx, 0x0c0000080
+    rdmsr
+    bts eax, 8
+    wrmsr
+
+    ; 开启分页
+    mov eax, cr0
+    or eax, 0x80000000
+    mov cr0, eax
+
+    ; 和bsp使用同一个段选择子，跳转64位代码，进入64位模式
+    ; jmp 0x18:long_mode
+    push 0x18
+    push long_mode   ; eip x64内核的start address
+
+    xor eax, eax
+    mov eax, 0x20
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+    mov fs, ax
+    mov gs, ax
+
+    retf ; retf 长跳转返回，从栈中弹出：eip、cs
+
+[BITS 64]
+long_mode:
 ap_init_finish:
     mov eax, 1
 spin_lock:
@@ -61,8 +102,13 @@ spin_lock:
 spin_unlock:
     mov dword [ap_boot_lock], 0
 
-    jmp $
+    mov rax, [0xA000]   ;跳转bsp核的c入口函数
+    jmp rax
 
+.hlt:
+    sti
+    hlt
+    jmp .hlt
 
 spin_pause:
     pause   ;让cpu歇一会，减少功耗，降低流水线堵塞
