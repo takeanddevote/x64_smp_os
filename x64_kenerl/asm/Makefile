@@ -3,3 +3,4 @@ obj-y += io.o
 obj-y += prink.o
 obj-y += interrupt.o
 obj-y += spinlock.o
+obj-y += apic_interrupts.o

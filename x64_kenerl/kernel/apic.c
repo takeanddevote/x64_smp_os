@@ -19,6 +19,11 @@
 #define LAPIC_ICR_OFFSET_L      0x300
 #define LAPIC_ICR_OFFSET_H      0x310
 
+#define LAPIC_LVT_TIMER_OFFSET  0x320
+#define LAPIC_TIMER_DCR_OFFSET  0x3E0
+#define LAPIC_TIMER_ICR_OFFSET  0x380
+#define LAPIC_TIMER_CCR_OFFSET  0x390
+
 static apic_info_t g_apicInfo;
 
 static void *get_rsdp_address(const char *data, size_t msize)
@@ -344,5 +349,23 @@ int apic_broadcast_message_interrupt(u8 vector)
         err("bsp apic send IPI fail.\n");
         return -1;
     }
+    return 0;
+}
+
+int lapic_timer_one_shot_start(u8 vector, u32 count)
+{
+    lapic_lvt_timer_t lvt = {0};
+    lvt.vector = vector;
+    lvt.mask = 0;
+    lvt.timer_mode = 0b00;
+
+    u32 *LVT = get_apic_register_addr(LAPIC_LVT_TIMER_OFFSET);
+    u32 *DCR = get_apic_register_addr(LAPIC_TIMER_DCR_OFFSET);
+    u32 *ICR = get_apic_register_addr(LAPIC_TIMER_ICR_OFFSET);
+
+    *LVT = *((u32 *)&lvt);
+    *DCR = 0x00;
+    *ICR = count;
+
     return 0;
 }

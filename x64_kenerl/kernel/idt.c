@@ -6,6 +6,7 @@ extern void general_interrupt_handler(void);
 extern void clock_handler_entry(void);
 extern void IPI_TEST_handler_entry(void);
 extern void IPI_TEST_handler_entry1(void);
+extern void lapic_timer_entry(void);
 
 static idtr_data_t g_idtr;
 static idt_item_t g_idtItems[256];
@@ -49,6 +50,9 @@ int init_idt(void)
                 break;
             case INTER_ID_IPI_TEST1:
                 handler = IPI_TEST_handler_entry1;
+                break;
+            case INTER_ID_LAPIC_TIMER:
+                handler = lapic_timer_entry;
                 break;
             default:
                 handler = general_interrupt_handler;

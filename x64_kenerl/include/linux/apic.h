@@ -93,11 +93,22 @@ typedef struct {
     u8 destination_field;
 } __attribute__((packed)) lapic_ICR_h_t;
 
+typedef struct {
+    u8 vector;
+    u8 reserved1 : 4;
+    u8 delivery_status : 1;
+    u8 reserved2 : 3;
+    u16 mask : 1;
+    u16 timer_mode : 2;
+    u16 reserved3 : 13;
+} __attribute__((packed)) lapic_lvt_timer_t;
+
 int apic_init(void);
 int ap_init(void);
 int ap_local_apic_init(void);
 int lapic_send_eoi();
 int apic_broadcast_message_interrupt(u8 vector);
 int get_lapic_id();
+int lapic_timer_one_shot_start(u8 vector, u32 count);
 
 #endif /* __APIC_H__ */

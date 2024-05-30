@@ -41,10 +41,12 @@ int x64_kernel_main()
     ap_init();
 
     // TODO：两个相同的中断消息间隔过短，会出现丢失的情况
-    apic_broadcast_message_interrupt(0xA0);
+    apic_broadcast_message_interrupt(INTER_ID_IPI_TEST);
     delay_s(2);
-    apic_broadcast_message_interrupt(0xA0);
+    apic_broadcast_message_interrupt(INTER_ID_IPI_TEST1);
     debugsit
+    delay_s(2);
+    lapic_timer_one_shot_start(INTER_ID_LAPIC_TIMER, 90000);
     while(1);
 
     return 0;
