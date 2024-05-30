@@ -288,5 +288,10 @@ int ap_init(void)
             break;
         }
     }
-    log("all %d aps work normal...\n", *ap_couts);
+    log("all %d aps work normal... %d.\n", *ap_couts, g_apicInfo.lapic_num - 1);
+}
+
+int ap_local_apic_init(void)
+{
+    debug("ap apic: 0x%x 0x%x.\n", read_apic_base(), g_apicInfo.localInterruptControllerAddress);
 }

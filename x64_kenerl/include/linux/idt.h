@@ -7,6 +7,7 @@
 #define INTER_ID_TIMER      0x20
 #define INTER_ID_KEYBOARD   0x21
 #define INTER_ID_RTC        0x28
+#define INTER_ID_IPI_TEST   0xA0
 
 
 #define INTER_ID_0X80        0x80
@@ -41,5 +42,6 @@ typedef struct {
 
 extern int init_idt(void);
 void send_eoi(int idt_index);
+extern int init_ap_idt();
 
 #endif /* __IDT_H__ */

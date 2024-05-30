@@ -8,6 +8,9 @@ void x64_ap_main(void)
 {
     u64 *ptr = (u64 *)0xA000;
     printk("aps enter c..... 0x%x\n", *ptr);
+    
+    init_ap_idt();
+    ap_local_apic_init();
 
     while(1);
 }
@@ -21,7 +24,6 @@ int x64_kernel_main()
     init_idt();
     apic_init();
     ap_init();
-    
     debugsit
     while(1);
 

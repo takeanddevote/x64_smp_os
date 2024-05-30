@@ -4,6 +4,7 @@
 
 extern void general_interrupt_handler(void);
 extern void clock_handler_entry(void);
+extern void IPI_TEST_handler_entry(void);
 
 static idtr_data_t g_idtr;
 static idt_item_t g_idtItems[256];
@@ -42,6 +43,9 @@ int init_idt(void)
             case INTER_ID_0X80:
                 item->dpl = 3;
                 break;
+            case INTER_ID_IPI_TEST:
+                handler = IPI_TEST_handler_entry;
+                break;
             default:
                 handler = general_interrupt_handler;
                 break;
@@ -60,4 +64,9 @@ int init_idt(void)
     g_idtr.base = (u64)g_idtItems;
     asm volatile ("lidt g_idtr;");
     __asm__("sti;"); //启用中断，置位eflags的IF-[9]
+}
+
+int init_ap_idt()
+{
+    asm volatile ("lidt g_idtr;");
 }

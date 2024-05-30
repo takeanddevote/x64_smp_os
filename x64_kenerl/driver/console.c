@@ -6,6 +6,9 @@
 #include "linux/type.h"
 #include "linux/asm.h"
 #include "libs/string.h"
+#include "linux/spinlock.h"
+
+static spin_lock_handle lock;
 
 #define CRT_ADDR_REG 0x3D4 // CRT(6845)索引寄存器
 #define CRT_DATA_REG 0x3D5 // CRT(6845)数据寄存器
@@ -127,6 +130,9 @@ void console_write(char *buf, u32 count)
 {
     char ch;
     char *ptr = (char *)pos;
+
+    spin_lock(&lock);
+
     while (count--)
     {
         ch = *buf++;
@@ -175,8 +181,10 @@ void console_write(char *buf, u32 count)
         }
     }
     set_cursor();
+    spin_unlock(&lock);
 }
 
 void console_init(void) {
+    spin_lock_init(&lock);
     console_clear();
 }

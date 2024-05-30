@@ -67,9 +67,9 @@ typedef struct {
 typedef struct {
     u32 localInterruptControllerAddress; //local apic的寄存器物理基地址
     u32 lapic_num;
-    local_apic_t lapic[10];
+    local_apic_t lapic[100];
     u32 ioapic_num;
-    io_apic_t ioapic[10];
+    io_apic_t ioapic[100];
 } apic_info_t;
 
 typedef struct {
@@ -95,5 +95,6 @@ typedef struct {
 
 int apic_init(void);
 int ap_init(void);
+int ap_local_apic_init(void);
 
 #endif /* __APIC_H__ */

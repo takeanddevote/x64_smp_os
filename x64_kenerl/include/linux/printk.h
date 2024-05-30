@@ -2,6 +2,7 @@
 #define __PRINTK_H__
 #include "libs/stdarg.h"
 #include "logger.h"
+#include "linux/spinlock.h"
 
 int vsprintf(char *buf, const char *fmt, va_list args);
 int printk(char *fmt, ...);
