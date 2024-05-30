@@ -44,6 +44,7 @@ lapic_timer_entry:
 
     mov rdi, lapic_timer_interrupt_msg
     call printk
+    call lapic_send_eoi
     iretq
 
 

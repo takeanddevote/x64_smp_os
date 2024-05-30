@@ -46,7 +46,7 @@ int x64_kernel_main()
     apic_broadcast_message_interrupt(INTER_ID_IPI_TEST1);
     debugsit
     delay_s(2);
-    lapic_timer_one_shot_start(INTER_ID_LAPIC_TIMER, 90000);
+    lapic_timer_cycle_start(INTER_ID_LAPIC_TIMER, 50000000*10);
     while(1);
 
     return 0;

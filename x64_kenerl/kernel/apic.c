@@ -369,3 +369,21 @@ int lapic_timer_one_shot_start(u8 vector, u32 count)
 
     return 0;
 }
+
+int lapic_timer_cycle_start(u8 vector, u32 count)
+{
+    lapic_lvt_timer_t lvt = {0};
+    lvt.vector = vector;
+    lvt.mask = 0;
+    lvt.timer_mode = 0b01;
+
+    u32 *LVT = get_apic_register_addr(LAPIC_LVT_TIMER_OFFSET);
+    u32 *DCR = get_apic_register_addr(LAPIC_TIMER_DCR_OFFSET);
+    u32 *ICR = get_apic_register_addr(LAPIC_TIMER_ICR_OFFSET);
+
+    *LVT = *((u32 *)&lvt);
+    *DCR = 0x00;
+    *ICR = count;
+
+    return 0;
+}
