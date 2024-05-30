@@ -131,7 +131,7 @@ void console_write(char *buf, u32 count)
     char ch;
     char *ptr = (char *)pos;
 
-    spin_lock(&lock);
+    // spin_lock(&lock);
 
     while (count--)
     {
@@ -181,10 +181,10 @@ void console_write(char *buf, u32 count)
         }
     }
     set_cursor();
-    spin_unlock(&lock);
+    // spin_unlock(&lock);
 }
 
 void console_init(void) {
-    spin_lock_init(&lock);
+    // spin_lock_init(&lock);
     console_clear();
 }

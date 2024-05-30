@@ -12,6 +12,13 @@
 #define BDA_RSDP_ADDRESS_END    0x100000
 #define RSDP_SIGNATURE          "RSD PTR"
 
+
+#define LAPIC_ID_OFFSET_L       0x20
+#define LAPIC_EOI_OFFSET        0xB0
+#define LAPIC_SVR_OFFSET        0xF0
+#define LAPIC_ICR_OFFSET_L      0x300
+#define LAPIC_ICR_OFFSET_H      0x310
+
 static apic_info_t g_apicInfo;
 
 static void *get_rsdp_address(const char *data, size_t msize)
@@ -157,6 +164,12 @@ uint64_t read_apic_base() {
     return ((uint64_t)edx << 32) | (eax & 0xFFFFF000);
 }
 
+u32 *get_apic_register_addr(u32 offset)
+{
+    return (u32 *)(read_apic_base() + offset);
+}
+
+
 int apic_init(void)
 {
     rsdp_t *p_rsdp = NULL;
@@ -214,9 +227,6 @@ int apic_init(void)
 
     return 0;
 }
-
-#define LAPIC_ICR_OFFSET_L      0x300
-#define LAPIC_ICR_OFFSET_H      0x310
 
 bool check_IPI_success()
 {
@@ -291,7 +301,48 @@ int ap_init(void)
     log("all %d aps work normal... %d.\n", *ap_couts, g_apicInfo.lapic_num - 1);
 }
 
+int get_lapic_id()
+{
+    u32 *apicIdR = get_apic_register_addr(LAPIC_ID_OFFSET_L);
+    // debug("ap apic id %d.\n", (*apicIdR) >> 24); //intel不同系列cpu的apic id所在字段不同
+    return ((*apicIdR) >> 24);
+}
+
+int lapic_send_eoi()
+{
+    *((u32 *)(read_apic_base() + LAPIC_EOI_OFFSET)) = 0;
+    return 0;
+}
+
 int ap_local_apic_init(void)
 {
-    debug("ap apic: 0x%x 0x%x.\n", read_apic_base(), g_apicInfo.localInterruptControllerAddress);
+    //置位SVR寄存器的bit8来使能本地apic
+    u32 *SVR = get_apic_register_addr(LAPIC_SVR_OFFSET);
+    *SVR = *SVR | (1 << 8);
+    
+    return 0;
+}
+
+int apic_broadcast_message_interrupt(u8 vector)
+{
+    u64 base = read_apic_base();
+    u32 *ICR_L = (u32 *)(base + LAPIC_ICR_OFFSET_L);
+    u32 *ICR_H = (u32 *)(base + LAPIC_ICR_OFFSET_H);
+    
+    lapic_ICR_l_t icr_val_l = {0};
+    lapic_ICR_h_t icr_val_h = {0};
+
+    icr_val_l.vector = vector;
+    icr_val_l.delivery_mode = 0b000;
+    icr_val_l.trigger_mode = 1;
+    icr_val_l.level = 0;
+    icr_val_l.destination_shortland = 0b10;
+    *ICR_H = *((u32 *)&icr_val_h);
+    *ICR_L = *((u32 *)&icr_val_l); 
+
+    if(!check_IPI_success()) {
+        err("bsp apic send IPI fail.\n");
+        return -1;
+    }
+    return 0;
 }

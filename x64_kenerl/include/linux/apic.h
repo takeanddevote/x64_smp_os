@@ -96,5 +96,8 @@ typedef struct {
 int apic_init(void);
 int ap_init(void);
 int ap_local_apic_init(void);
+int lapic_send_eoi();
+int apic_broadcast_message_interrupt(u8 vector);
+int get_lapic_id();
 
 #endif /* __APIC_H__ */

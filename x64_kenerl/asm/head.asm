@@ -19,14 +19,14 @@ extern x64_kernel_main
 [BITS 64]
 _kernel_start:
     ; 每10ms发生一次时钟中断
-.set_8253_frequency:
-    mov al, 0x36         ; 设置PIT的工作模式
-    out 0x43, al         ; 发送到控制端口
+; .set_8253_frequency:
+;     mov al, 0x36         ; 设置PIT的工作模式
+;     out 0x43, al         ; 发送到控制端口
 
-    mov ax, 11932        ; 为100Hz计算的除数
-    out 0x40, al         ; 发送低字节到通道0
-    mov al, ah
-    out 0x40, al         ; 发送高字节到通道0
+;     mov ax, 11932        ; 为100Hz计算的除数
+;     out 0x40, al         ; 发送低字节到通道0
+;     mov al, ah
+;     out 0x40, al         ; 发送高字节到通道0
 
 .end_kernel64_main:
     jmp x64_kernel_main

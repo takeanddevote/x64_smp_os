@@ -8,6 +8,7 @@
 #define INTER_ID_KEYBOARD   0x21
 #define INTER_ID_RTC        0x28
 #define INTER_ID_IPI_TEST   0xA0
+#define INTER_ID_IPI_TEST1  0xA1
 
 
 #define INTER_ID_0X80        0x80

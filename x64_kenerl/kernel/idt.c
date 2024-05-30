@@ -5,6 +5,7 @@
 extern void general_interrupt_handler(void);
 extern void clock_handler_entry(void);
 extern void IPI_TEST_handler_entry(void);
+extern void IPI_TEST_handler_entry1(void);
 
 static idtr_data_t g_idtr;
 static idt_item_t g_idtItems[256];
@@ -45,6 +46,9 @@ int init_idt(void)
                 break;
             case INTER_ID_IPI_TEST:
                 handler = IPI_TEST_handler_entry;
+                break;
+            case INTER_ID_IPI_TEST1:
+                handler = IPI_TEST_handler_entry1;
                 break;
             default:
                 handler = general_interrupt_handler;
