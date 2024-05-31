@@ -110,5 +110,6 @@ int lapic_send_eoi();
 int apic_broadcast_message_interrupt(u8 vector);
 int get_lapic_id();
 int lapic_timer_one_shot_start(u8 vector, u32 count);
+int lapic_timer_cycle_start(u8 vector, u32 count);
 
 #endif /* __APIC_H__ */

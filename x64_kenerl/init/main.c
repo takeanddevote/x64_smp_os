@@ -3,6 +3,7 @@
 #include "linux/mm.h"
 #include "linux/idt.h"
 #include "linux/apic.h"
+#include "linux/cpu.h"
 
 void x64_ap_main(void)
 {
@@ -10,8 +11,13 @@ void x64_ap_main(void)
     ap_local_apic_init(); //使能本地apic。
     __asm volatile("sti;");
 
+    kpcr_create();
+    kpcr_swapgs();
+    int cpuid = kpcr_get_offset(0);
+    kpcr_swapgs();
+
     //初始化专属数据区
-    printk("apic %d init suceess.\n", get_lapic_id());
+    printk("apic %d init suceess..\n", cpuid);
     
     while(1);
 }
@@ -41,11 +47,11 @@ int x64_kernel_main()
     ap_init();
 
     // TODO：两个相同的中断消息间隔过短，会出现丢失的情况
-    apic_broadcast_message_interrupt(INTER_ID_IPI_TEST);
-    delay_s(2);
-    apic_broadcast_message_interrupt(INTER_ID_IPI_TEST1);
-    debugsit
-    delay_s(2);
+    // apic_broadcast_message_interrupt(INTER_ID_IPI_TEST);
+    // delay_s(2);
+    // apic_broadcast_message_interrupt(INTER_ID_IPI_TEST1);
+    // // debugsit
+    // delay_s(2);
     lapic_timer_cycle_start(INTER_ID_LAPIC_TIMER, 50000000*10);
     while(1);
 

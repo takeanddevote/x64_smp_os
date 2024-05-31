@@ -39,6 +39,8 @@ IPI_TEST_handler_entry1:
     call lapic_send_eoi
     iretq
 
+; 不跨态，栈上每个寄存器占8字节：rip cs eflags
+; 跨态，栈上每个寄存器占8字节：rip cs eflags rsp ss
 global lapic_timer_entry
 lapic_timer_entry:
 

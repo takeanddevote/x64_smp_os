@@ -44,5 +44,6 @@ _bulid:
 
 	$(Q) $(OBJCOPY) -O binary $(KBUILD_SRC)/$(TARGET) $(KBUILD_SRC)/$(TARGET).bin
 	$(Q) $(NM) $(KBUILD_SRC)/$(TARGET) | sort > $(KBUILD_SRC)/$(TARGET).map
+	$(Q) $(OBJDUMP) -M intel -D $(KBUILD_SRC)/$(TARGET) > $(KBUILD_SRC)/$(TARGET).asm
 
 .PHONY : $(PHONY)
