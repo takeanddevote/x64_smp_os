@@ -17,9 +17,14 @@ void x64_ap_main(void)
     kpcr_swapgs();
 
     //初始化专属数据区
-    printk("apic %d init suceess..\n", cpuid);
+    printk("ap kpcr %d init suceess..\n", cpuid);
     
-    while(1);
+    while(1) {
+        asm volatile("hlt;");
+        // kpcr_swapgs();
+        // log("cores %d wait up from hlt....\n", kpcr_get_offset(0));
+        // kpcr_swapgs();
+    }
 }
 
 void _delay_ms()
@@ -46,14 +51,13 @@ int x64_kernel_main()
     apic_init();
     ap_init();
 
-    // TODO：两个相同的中断消息间隔过短，会出现丢失的情况
-    // apic_broadcast_message_interrupt(INTER_ID_IPI_TEST);
-    // delay_s(2);
-    // apic_broadcast_message_interrupt(INTER_ID_IPI_TEST1);
-    // // debugsit
-    // delay_s(2);
     lapic_timer_cycle_start(INTER_ID_LAPIC_TIMER, 50000000*10);
-    while(1);
+    while(1) {
+        asm volatile("hlt;");
+        // kpcr_swapgs();
+        // log("cores %d wait up from hlt....\n", kpcr_get_offset(0));
+        // kpcr_swapgs();
+    }
 
     return 0;
 }

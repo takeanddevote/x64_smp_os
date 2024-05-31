@@ -3,6 +3,7 @@
 #include "linux/printk.h"
 #include "linux/io.h"
 #include "linux/mm.h"
+#include "linux/cpu.h"
 #include "libs/string.h"
 #include "logger.h"
 
@@ -230,6 +231,18 @@ int apic_init(void)
         return -1;
     }
 
+    //建立虚拟地址映射才能访问apic寄存器；
+    g_apicInfo.localInterruptControllerAddress = ioremap_nocache(g_apicInfo.localInterruptControllerAddress, PAGE_SIZE); 
+
+    //bsp设置kpcr数据区
+    kpcr_create();
+
+    kpcr_swapgs();
+    int cpuid = kpcr_get_offset(0);
+    kpcr_swapgs();
+
+    //初始化专属数据区
+    printk("bsp kpcr %d init suceess..\n", cpuid);
     return 0;
 }
 
@@ -249,8 +262,7 @@ int ap_init(void)
     u64 *apJmp = (u64 *)0xA000; //把ap的c入口函数存入内存，ap再读取跳转
     *apJmp = (u64)x64_ap_main;
 
-    //建立虚拟地址映射才能访问
-    u64 base = ioremap_nocache(g_apicInfo.localInterruptControllerAddress, PAGE_SIZE); 
+    u64 base = g_apicInfo.localInterruptControllerAddress;
     u32 *ICR_L = (u32 *)(base + LAPIC_ICR_OFFSET_L);
     u32 *ICR_H = (u32 *)(base + LAPIC_ICR_OFFSET_H);
     

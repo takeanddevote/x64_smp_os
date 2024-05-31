@@ -13,13 +13,11 @@ kpcr_t *kpcr_create(void);
 #define kpcr_swapgs()   asm volatile("swapgs;")
 static inline uint64_t kpcr_get_offset(uint64_t offset)
 {
-    uint64_t ret;
     asm volatile(
         "mov rax, gs:[rcx];"
-        : "=a"(ret)
+        :
         : "c"(offset)
     );
-    return ret;
 }
 
 uint64_t read_msr(uint32_t msr);
