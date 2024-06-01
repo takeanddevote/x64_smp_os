@@ -35,20 +35,23 @@ void write_msr(uint32_t msr, uint64_t value) {
     asm volatile("wrmsr" : : "c"(msr), "a"(low), "d"(high));
 }
 
+kpcr_t *g_kpcrs[100];    //调试使用
+
 kpcr_t *kpcr_create(void)
 {
     int cpuid = get_lapic_id();
-    kpcr_t *kpcr = (kpcr_t *)kmalloc(sizeof(kpcr_t));
+    kpcr_t *kpcr = (kpcr_t *)kzalloc(sizeof(kpcr_t));
     if(!kpcr) {
         err("cpu %d create kpcr fail.\n", cpuid);
         return NULL;
     }
-
-    memset(kpcr, 0, sizeof(kpcr_t));
+    
     kpcr->cpuid = cpuid;
+    kpcr->stack = (uint64_t)kzalloc(PAGE_SIZE);
 
     write_msr(IA32_KERNEL_GS_BASE, (uint64_t)kpcr);
     
+    g_kpcrs[cpuid] = kpcr;
     return kpcr;
 }
 

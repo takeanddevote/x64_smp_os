@@ -7,6 +7,7 @@ extern void clock_handler_entry(void);
 extern void IPI_TEST_handler_entry(void);
 extern void IPI_TEST_handler_entry1(void);
 extern void lapic_timer_entry(void);
+extern void lapic_sched_broadcast_entry(void);
 
 static idtr_data_t g_idtr;
 static idt_item_t g_idtItems[256];
@@ -53,6 +54,9 @@ int init_idt(void)
                 break;
             case INTER_ID_LAPIC_TIMER:
                 handler = lapic_timer_entry;
+                break;
+            case INTER_ID_SCHED_BROADCAST:
+                handler = lapic_sched_broadcast_entry;
                 break;
             default:
                 handler = general_interrupt_handler;

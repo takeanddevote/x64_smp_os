@@ -14,7 +14,8 @@ TARGET := vmlinux_x64
 
 LINUXINCLUDRE := -I$(srctree)/x64_kenerl/include	\
 	-I$(srctree)/components/	\
-	-I$(srctree)/components/logger/
+	-I$(srctree)/components/logger/	\
+	-I$(srctree)/components/include/
 
 
 # 配置编译参数

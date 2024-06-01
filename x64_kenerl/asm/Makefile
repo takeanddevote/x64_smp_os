@@ -4,3 +4,4 @@ obj-y += prink.o
 obj-y += interrupt.o
 obj-y += spinlock.o
 obj-y += apic_interrupts.o
+obj-y += sched64.o

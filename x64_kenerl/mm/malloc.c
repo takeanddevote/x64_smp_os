@@ -2,6 +2,7 @@
 #include "linux/type.h"
 #include "libs/string.h"
 #include "linux/printk.h"
+#include "linux/spinlock.h"
 
 struct bucket_desc {
     u8 *page; //虚拟地址页空间
@@ -30,6 +31,8 @@ static struct bucket_dir g_bucket_dir[] = {
 };
 
 static struct bucket_desc *free_bucket_chain;
+
+SPIN_LOCK(lock);
 
 struct bucket_desc *construct_free_bucket_chain()
 {

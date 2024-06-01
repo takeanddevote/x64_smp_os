@@ -1,12 +1,14 @@
 #ifndef __CPU_H__
 #define __CPU_H__
 #include "linux/type.h"
+#include "linux/task64.h"
 
 typedef struct {
-    uint64_t cpuid;
+    uint64_t cpuid; //lapic id
     uint64_t esp0;
     uint64_t esp3;
-    uint64_t thread_esp0;
+    uint64_t stack;  //不运行任务时的原始栈
+    task_t *task;   //正在执行的任务
 } kpcr_t;
 
 kpcr_t *kpcr_create(void);

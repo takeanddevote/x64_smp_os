@@ -4,3 +4,5 @@ obj-y += idt.o
 obj-y += apic.o
 obj-y += ioremap.o
 obj-y += cpu.o
+obj-y += task64.o
+obj-y += sched.o

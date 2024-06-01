@@ -14,10 +14,17 @@ void x64_ap_main(void)
     kpcr_create();
     kpcr_swapgs();
     int cpuid = kpcr_get_offset(0);
+    uint64_t stack = kpcr_get_offset(24);
     kpcr_swapgs();
 
+    printk("ap kpcr %d stack %x init suceess..\n", cpuid, stack);
+
+    asm volatile(
+        "mov rsp, rax;" 
+        :: "a"(stack)
+    );
+
     //初始化专属数据区
-    printk("ap kpcr %d init suceess..\n", cpuid);
     
     while(1) {
         asm volatile("hlt;");
@@ -50,8 +57,10 @@ int x64_kernel_main()
     init_idt();
     apic_init();
     ap_init();
+    task_init();
+    apic_broadcast_message_interrupt(INTER_ID_SCHED_BROADCAST);
 
-    lapic_timer_cycle_start(INTER_ID_LAPIC_TIMER, 50000000*10);
+    // lapic_timer_cycle_start(INTER_ID_LAPIC_TIMER, 50000000*10);
     while(1) {
         asm volatile("hlt;");
         // kpcr_swapgs();
