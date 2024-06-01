@@ -8,6 +8,26 @@ extern void IPI_TEST_handler_entry(void);
 extern void IPI_TEST_handler_entry1(void);
 extern void lapic_timer_entry(void);
 extern void lapic_sched_broadcast_entry(void);
+extern void inter_entry0(void);
+extern void inter_entry1(void);
+extern void inter_entry2(void);
+extern void inter_entry3(void);
+extern void inter_entry4(void);
+extern void inter_entry5(void);
+extern void inter_entry6(void);
+extern void inter_entry7(void);
+extern void inter_entry8(void);
+extern void inter_entry9(void);
+extern void inter_entry10(void);
+extern void inter_entry11(void);
+extern void inter_entry12(void);
+extern void inter_entry13(void);
+extern void inter_entry14(void);
+extern void inter_entry15(void);
+extern void inter_entry16(void);
+extern void inter_entry17(void);
+extern void inter_entry18(void);
+extern void inter_entry19(void);
 
 static idtr_data_t g_idtr;
 static idt_item_t g_idtItems[256];
@@ -40,6 +60,68 @@ int init_idt(void)
     {
         item = &g_idtItems[i];
         switch(i) {
+            case 0:
+                handler = (u64)inter_entry0;
+                break;
+            case 1:
+                handler = (u64)inter_entry1;
+                break;
+            case 2:
+                handler = (u64)inter_entry2;
+                break;
+            case 3:
+                handler = (u64)inter_entry3;
+                break;
+            case 4:
+                handler = (u64)inter_entry4;
+                break;
+            case 5:
+                handler = (u64)inter_entry5;
+                break;
+            case 6:
+                handler = (u64)inter_entry6;
+                break;
+            case 7:
+                handler = (u64)inter_entry7;
+                break;
+            case 8:
+                handler = (u64)inter_entry8;
+                break;
+            case 9:
+                handler = (u64)inter_entry9;
+                break;
+            case 10:
+                handler = (u64)inter_entry10;
+                break;
+            case 11:
+                handler = (u64)inter_entry11;
+                break;
+            case 12:
+                handler = (u64)inter_entry12;
+                break;
+            case 13:
+                handler = (u64)inter_entry13;
+                break;
+            case 14:
+                handler = (u64)inter_entry14;
+                break;
+            case 15:
+                handler = (u64)inter_entry15;
+                break;
+            case 16:
+                handler = (u64)inter_entry16;
+                break;
+            case 17:
+                handler = (u64)inter_entry17;
+                break;
+            case 18:
+                handler = (u64)inter_entry18;
+                break;
+            case 19:
+                handler = (u64)inter_entry19;
+                break;
+
+
             case INTER_ID_TIMER:
                 handler = (u64)clock_handler_entry;
                 break;

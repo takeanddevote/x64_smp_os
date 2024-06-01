@@ -48,7 +48,10 @@ typedef struct {
     task_fun_t function;
     uint64_t esp0;
     uint64_t esp3;
-    void *stack;
+    uint64_t cs;
+    uint64_t ss;
+    uint64_t ds;
+    char *stack;
     uint64_t stack_length;
     uint64_t counter;
     uint64_t priority;
@@ -64,5 +67,8 @@ task_t *get_next_ready_task();
 bool get_first_sched_flag(task_t *task);
 void set_first_sched_flag(task_t *task, bool flag);
 void set_task_running(task_t *task);
+uint64_t get_task_esp0(task_t *task);
+uint64_t get_task_cs(task_t *task);
+uint64_t get_task_funtion(task_t *task);
 
 #endif /* __TASK64_H__ */

@@ -78,6 +78,7 @@ static void add_task(task_t *task)
     spin_unlock(&g_task.task_lock);
 }
 
+//创建内核态任务
 task_t *task_create(const char *name, task_fun_t function, size_t stack_size, int priority)
 {
     task_t *task = (task_t *)kzalloc(sizeof(task_t));
@@ -87,7 +88,7 @@ task_t *task_create(const char *name, task_fun_t function, size_t stack_size, in
     }
 
     task->stack_length = stack_size;
-    task->stack = kzalloc(stack_size);
+    task->stack = (char *)kzalloc(stack_size);
     if(!task->stack) {
         err("create task fail.\n");
         kfree_s(task, sizeof(task_t));
@@ -100,6 +101,10 @@ task_t *task_create(const char *name, task_fun_t function, size_t stack_size, in
     task->counter = task->priority = priority;
     task->function = function;
     task->fisrt_sched = true;
+
+    task->esp0 = task->stack + stack_size;
+    task->cs = (3 << 3) | 0b000; // 内核任务
+    task->ss = task->ds = (4 << 3) | 0b000;
 
     task->state = TASK_READY;
     add_task(task);
@@ -145,4 +150,24 @@ void set_first_sched_flag(task_t *task, bool flag)
 void set_task_running(task_t *task)
 {
     task->state = TASK_RUNNING;   
+}
+
+uint64_t get_task_esp0(task_t *task)
+{
+    return task->esp0;  
+}
+
+uint64_t get_task_cs(task_t *task)
+{
+    return task->cs;
+}
+
+uint64_t get_task_funtion(task_t *task)
+{
+    return (uint64_t)task->function;
+}
+
+uint64_t get_task_ss(task_t *task)
+{
+    return task->ss;
 }
