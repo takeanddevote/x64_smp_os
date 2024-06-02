@@ -19,10 +19,15 @@ void x64_ap_main(void)
         :: "a"(stack)
     );
     kpcr_swapgs();
+
+    *((uint32_t *)0xb000) = 0;
+    
     __asm volatile("sti;"); //必须设置好栈再开中断，不然广播调度消息时，多ap有几率共用一个栈，导致异常
 
 
     printk("ap kpcr %d stack %x init suceess..\n", cpuid, stack);
+
+    
 
     //初始化专属数据区
     

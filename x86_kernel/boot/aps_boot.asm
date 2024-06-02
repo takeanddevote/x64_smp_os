@@ -7,8 +7,10 @@ DATA_SECTOR equ (2 << 3)
 
 
 [SECTION .data]
-ap_boot_lock: dd 0x0000   ;自旋锁变量 0x9FB00
+ap_stack_lock: dd 0x0000   ;自旋锁变量 0x9FB00
+ap_stack_offset: dd 0x9000   ;自旋锁变量 0x9FB00
 
+ap_boot_lock equ 0xb000
 [SECTION .text]
 [BITS 16]
 aps_start:
@@ -48,9 +50,28 @@ protected_mode:
     mov fs, ax
     mov gs, ax
 
+    mov eax, 1
+.spin_lock:
+    xchg eax, [ap_stack_lock]  ;交换ax和ap_boot_lock的值，ax为1，如果ap_boot_lock为1则已经上锁，不改变值，如果ap_boot_lock为0，则获得锁
+    test eax, eax
+    jnz spin_pause
+
+
+    mov eax, [ap_stack_offset]
     ; 初始化APs栈
-    mov esp, 0x9000
+    mov esp, eax
     mov ebp, esp
+
+    add eax, 128
+    mov [ap_stack_offset], eax
+
+.spin_unlock:
+    mov dword [ap_stack_lock], 0
+    jmp .enter_64_long_mode
+
+.spin_pause:
+    pause   ;让cpu歇一会，减少功耗，降低流水线堵塞
+    jmp .spin_lock
 
 .enter_64_long_mode:
     ; 启动PAE
@@ -97,10 +118,19 @@ spin_lock:
     test eax, eax
     jnz spin_pause
 
+
+    ; ; 初始化APs栈
+    ; mov eax, [0x9F000]
+    ; imul eax, eax, 128
+    ; add eax, 0x9000
+
+    ; mov esp, 0x9000
+    ; mov ebp, esp
+
     inc dword [0x9F000]
 
 spin_unlock:
-    mov dword [ap_boot_lock], 0
+    ; mov dword [ap_boot_lock], 0
 
     mov rax, [0xA000]   ;跳转bsp核的c入口函数
     jmp rax

@@ -54,12 +54,14 @@ void *kmalloc(size_t len)
         2、如果有能力分配，则遍历对应的桶链，寻找空闲的内存块，否则返回NULL。
         3、第一次分配内存块时，没有挂载任何的桶，需要先构造一页空间的空闲桶链，并初始化一个桶，然后插入桶目录中。
      */
+    spin_lock(&lock);
     struct bucket_dir *dirPos = g_bucket_dir;
     for(;dirPos->size != 0; ++dirPos) { 
         if(dirPos->size >= len)
             break;
     }
     if(!dirPos->size) {
+        spin_unlock(&lock);
         printk("Not capable to malloc %d bytes memory block.\n", len);
         return NULL;
     }
@@ -81,8 +83,10 @@ void *kmalloc(size_t len)
         chain->blockSize = dirPos->size;
 
         chain->page = (void *)get_free_page(); //分配内存块页空间
-        if(!chain->page)
+        if(!chain->page) {
+            spin_unlock(&lock);
             return NULL;
+        }
 
         // size_t blockNums = (PAGE_SIZE / chain->blockSize);
         // u8 *pos = chain->page;
@@ -108,7 +112,7 @@ void *kmalloc(size_t len)
     void *retVal = chain->freeBlock;
     chain->freeBlock = *((u8 **)chain->freeBlock); //下一个空闲内存块
     chain->refCnt++; //引用次数+1
-
+    spin_unlock(&lock);
     return retVal;
 }
 

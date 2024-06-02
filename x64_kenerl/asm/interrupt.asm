@@ -9,7 +9,7 @@ common_interrupt_msg:
     db "######### Exception %d CPU %d #########", 10,13,0
 
 exception_info:
-    db "EIP: 0x%x CS: 0x%x RGLAGS: 0x%x", 10,13,0
+    db "EIP: 0x%x", 10,13,0
 
 [SECTION .data]
 
@@ -68,9 +68,9 @@ _inter_entry:
     mov eax, 0
     call printk
 
-    mov rcx, [rsp+16]
-    mov rdx, [rsp+8]
-    mov rsi, rsp
+    ; mov rcx, [rsp+16]
+    ; mov rdx, [rsp+8]
+    mov rsi, [rsp]
     mov rdi, exception_info
     mov eax, 0
     call printk
@@ -120,6 +120,14 @@ inter_entry13:
     mov rsi, 13
     jmp _inter_entry
 inter_entry14:
+    mov rsi, [rsp]
+    mov rdi, exception_info
+    call printk
+
+    mov rsi, cr2    ; 导致页面错误的线性地址
+    mov rdi, exception_info
+    call printk
+
     mov rsi, 14
     jmp _inter_entry
 inter_entry15:

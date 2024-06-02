@@ -1,5 +1,6 @@
 #include "linux/task64.h"
 #include "linux/mm.h"
+#include "linux/apic.h"
 #include "linux/spinlock.h"
 #include "logger.h"
 
@@ -117,7 +118,7 @@ task_t *task_create(const char *name, task_fun_t function, size_t stack_size, in
 
 static void *idle_thread(void *ptr)
 {
-    log("enter idle_thread.\n");
+    log("cpu %d enter idle_thread.\n", get_lapic_id());
     // while(1) {
     //     asm volatile("pause;");
     // }
