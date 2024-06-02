@@ -87,14 +87,16 @@ qemu: all
 ifeq ($(ARCH),X86)
 	$(Q) qemu-system-i386 -m 32M -boot c -hda $(KBUILD_SRC)$(HD_IMG_NAME)
 else ifeq ($(ARCH),X64)
-	$(Q) ps -e | grep qemu | cut -d' ' -f2 | xargs kill
+	$(Q) $(shell ps -e | grep qemu | cut -d' ' -f2 | xargs kill)
 	$(Q) clear
 	$(Q) qemu-system-x86_64 \
 		-m 32M \
 		-boot c \
 		-cpu Nehalem -smp cores=1,threads=5	\
 		-hda $(KBUILD_SRC)$(HD_IMG_NAME)	\
-		-nographic &
+		-serial mon:stdio \
+		&
+
 endif
 
 PHONY += gdbqemu
@@ -106,12 +108,16 @@ ifeq ($(ARCH),X86)
 		-hda $(KBUILD_SRC)$(HD_IMG_NAME) \
 		-s -S -nographic
 else ifeq ($(ARCH),X64)
+	$(Q) $(shell ps -e | grep qemu | cut -d' ' -f2 | xargs kill)
+	$(Q) clear
 	$(Q) qemu-system-x86_64 \
 		-m 32M \
 		-boot c \
 		-cpu Nehalem -smp cores=1,threads=3	\
 		-hda $(KBUILD_SRC)$(HD_IMG_NAME) \
-		-s -S 
+		-serial mon:stdio \
+		-s -S 	\
+		&
 endif
 
 bochs: all $(if $(filter X64,$(ARCH)),x64_kernel,)

@@ -5,8 +5,8 @@
 
 typedef struct {
     uint64_t cpuid; //lapic id
-    uint64_t esp0;
-    uint64_t esp3;
+    uint64_t esp0;  //内核态任务栈
+    uint64_t esp3;  //用户态任务栈
     uint64_t stack;  //不运行任务时的原始栈
     task_t *task;   //正在执行的任务
 } kpcr_t;

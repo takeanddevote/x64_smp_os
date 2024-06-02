@@ -101,14 +101,14 @@ lapic_sched_broadcast_entry:
     push r13
     push r14
     push r15
-    mov cx, ds
-    push cx
-    mov cx, fs
-    push cx
-    mov cx, gs
-    push cx
+    mov rcx, ds
+    push rcx    ; 如果是push一个寄存器，压栈的字节数跟指定寄存器长度有关，比如push ax，则压栈2个字节，push rax则压栈8字节；对于常数push 1则默认压栈8字节
+    mov rcx, fs
+    push rcx
+    mov rcx, gs
+    push rcx
 
-    ; 通过压栈的cs和当前的cs比对，判断是否跨态；判断的目的是，如果跨态则不需要保存ss和esp了
+    ; 通过压栈的cs和当前的cs比对，判断是否跨态；判断的目的是，如果跨态则不需要保存ss和rsp了，因为跨态已经压栈了ss核rsp
     ; 如果不跨态则需要保存ss和esp
     mov rdi, [rsp+18*8+8]
     mov rcx, cs
@@ -121,7 +121,7 @@ lapic_sched_broadcast_entry:
     jmp .save_context_end
     
 .not_cross:
-    mov rdi, [rsp+40]
+    mov rdi, ss ; 不用清零rdi，这里是把ss赋值给整个rdi，不足的位数补零
     push rdi ;r3 ss
     push 0  ;标记不跨态
 

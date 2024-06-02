@@ -8,6 +8,7 @@ extern get_task_ss
 extern get_task_funtion
 extern lapic_send_eoi
 extern task_clean
+extern get_next_ready_task
 global first_sched_task
 global sched_task
 global task_exit
@@ -75,12 +76,57 @@ sched_task:
 
 
 task_exit:
-    ; 任务退出后，主动调度任务；如果没有任务调度，则返回原始栈上下文处
+    ; 任务退出后，主动调度任务；如果没有任务调度，则返回原始栈上下文处。
+    ; 对于内核态任务，任务回到此处时，是开启中断的状态，因此需要关闭中断，避免在解锁前发生中断，造成自旋锁死锁。在返回或者切任务时自动打开
+    cli
     swapgs
+    mov rsp, [gs:24] ; 当前处于任务栈，task_clean会释放栈资源，因此需要先切到原始栈。
     mov rdi, [gs:32]
     call task_clean
+    mov qword [gs:32], 0
     swapgs
 
-    jmp $
+    call get_next_ready_task
+    cmp rax, 0
+    je .exit
+
+.exit: ; 没有ready的任务，回到x64_ap_main或x64_kernel_main死循环处
+    pop rax
+
+    cmp rax, 1  ; 判断跨态标志
+    je .cross
+
+    pop rdi ; ss0 ; 不跨态下恢复ss0；跨态则构造返回栈中cpu自动恢复ss3
+    mov ss, di
+
+.cross:
+    pop rdi ;gs
+    mov gs, di
+    pop rdi ;fs
+    mov fs, di
+    pop rdi ;ds
+    mov ds, di
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop rbp
+    pop rsi
+    pop rdx
+    pop rdx
+    pop rbx
+    pop rdi
+    pop rax
+    ;原始栈就保存着返回栈，因此不需要重新构造
+.ret:
+    iretq
+
+.hlt:
+    hlt
+    jmp .hlt
 
 

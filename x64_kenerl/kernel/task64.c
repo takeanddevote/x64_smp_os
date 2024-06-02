@@ -27,6 +27,7 @@ task_t *get_next_ready_task()
     task_t *highPrioTask = NULL;
     bool hasWaitTask = false; //有 TASK_WAITING 状态的任务
 
+    spin_lock(&g_task.task_lock);
     /* 当前情况下，有n中任务类型：idle任务、ready任务、waiting任务（时间片执行完了）、睡眠任务 */
     for(int i = 1; i < TASK_MAX_NUMS; ++i) {
         if(!g_task.tasks[i])
@@ -72,7 +73,10 @@ task_t *get_next_ready_task()
             }
         }
     }
-
+    if(highPrioTask) {
+        highPrioTask->state = TASK_RUNNING;
+    }
+    spin_unlock(&g_task.task_lock);
     return highPrioTask;
 }
 
@@ -127,10 +131,11 @@ static void *idle_thread(void *ptr)
 
 static void *init_thread(void *ptr)
 {
-    log("enter init_thread.\n");
-    while(1) {
-        asm volatile("pause;");
-    }
+   log("cpu %d enter init_thread.\n", get_lapic_id());
+    // while(1) {
+    //     asm volatile("pause;");
+    // }
+    return NULL;
 }
 
 int task_init()
@@ -180,5 +185,11 @@ uint64_t get_task_ss(task_t *task)
 
 void task_clean(task_t *task)
 {
-    debugsit
+    task->state = TASK_DIED;
+    kfree_s(task->stack, task->stack_length);
+    kfree_s(task, sizeof(task_t));
+
+    spin_lock(&g_task.task_lock);
+    g_task.tasks[task->pid] = NULL;
+    spin_unlock(&g_task.task_lock);
 }
