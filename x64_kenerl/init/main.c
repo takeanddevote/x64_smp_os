@@ -58,6 +58,7 @@ void delay_s(int ms)
 int x64_kernel_main()
 {
     console_init();
+    init_serial();
     mm_init();
     init_idt();
     apic_init();

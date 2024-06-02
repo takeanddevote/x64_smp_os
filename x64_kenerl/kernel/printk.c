@@ -63,6 +63,7 @@ int printk(char *format, ...);
 */
 
 #include "linux/mm.h"
+#include "driver/tty.h"
 
 int va_num(char *format)
 {
@@ -74,4 +75,10 @@ int va_num(char *format)
         p++;
     }
     return num;
+}
+
+void data_out(const char *data, u32 size)
+{
+    // console_write(data, size);
+    serial_printk(data, size);
 }

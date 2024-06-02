@@ -22,7 +22,7 @@ retAddress: times 8 db 0x00
 ; 自右向左，前6个参数是分别通过r9、r8 、rcx 、rdx、rsi、rdi
 extern va_num
 extern vsprintf
-extern console_write
+extern data_out
 global printk
 printk:
     ;实现思路：把返回地址保存下来，然后push6个参数入栈，形成连续的栈传参，然后ret前，再还原原来的栈，
@@ -45,7 +45,7 @@ printk:
 
     mov rsi, rax
     mov rdi, g_printBuffer
-    call console_write
+    call data_out
 
     mov rax, [rsp] ; 栈平衡，并还原返回地址
     add rsp, 8*6
