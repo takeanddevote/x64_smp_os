@@ -6,7 +6,10 @@ clock_interrupt_msg:
     db "clock_interrupt_msg.", 10,13,0
 
 common_interrupt_msg:
-    db "interrupt iD %d.", 10,13,0
+    db "######### Exception %d CPU %d #########", 10,13,0
+
+exception_info:
+    db "EIP: 0x%x CS: 0x%x RGLAGS: 0x%x", 10,13,0
 
 [SECTION .data]
 
@@ -51,9 +54,27 @@ global inter_entry16
 global inter_entry17
 global inter_entry18
 global inter_entry19
+extern get_lapic_id
 _inter_entry:
+    push rsi
+    ; swapgs
+    ; mov rdi, [gs:0]
+    ; swapgs
+    call get_lapic_id
+
+    mov rdx, rax
+    pop rsi
     mov rdi, common_interrupt_msg
+    mov eax, 0
     call printk
+
+    mov rcx, [rsp+16]
+    mov rdx, [rsp+8]
+    mov rsi, rsp
+    mov rdi, exception_info
+    mov eax, 0
+    call printk
+
     jmp $
     iretq
 inter_entry0:

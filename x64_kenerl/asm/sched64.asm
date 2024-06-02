@@ -7,6 +7,7 @@ extern get_task_cs
 extern get_task_ss
 extern get_task_funtion
 extern lapic_send_eoi
+extern task_clean
 global first_sched_task
 global sched_task
 global task_exit
@@ -41,9 +42,9 @@ first_sched_task:
     push rax
 
     call get_task_esp0  
+    sub rax, 8
     mov rcx, task_exit
     mov [rax], rcx
-    sub rax, 8
 
     push rax    ;rsp
 
@@ -74,4 +75,12 @@ sched_task:
 
 
 task_exit:
-    ; 任务退出后，主动调度任务；如果没有任务调度，则返回原始栈上下文出
+    ; 任务退出后，主动调度任务；如果没有任务调度，则返回原始栈上下文处
+    swapgs
+    mov rdi, [gs:32]
+    call task_clean
+    swapgs
+
+    jmp $
+
+

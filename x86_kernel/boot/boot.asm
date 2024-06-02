@@ -9,8 +9,8 @@ second_part_addr equ 0x500
 global _start ;全局声明程序入口
 _start:
     ; 设置屏幕模式为文本模式，清除屏幕
-    mov ax, 3
-    int 0x10
+    ; mov ax, 3
+    ; int 0x10
 
     ; xchg bx, bx ;bochs 断点
     ; xchg bx, bx

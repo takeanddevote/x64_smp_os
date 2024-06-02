@@ -10,6 +10,9 @@ lapic_timer_interrupt_msg:
 lapic_sched_interrupt_msg:
     db "lapic_sched_interrupt_msg...", 10,13,0
 
+capture_no_task_exit:
+    db "capture_no_task_exit...", 10,13,0
+
 [SECTION .data]
 
 taskspinlock: dw 0x00000000
@@ -162,4 +165,8 @@ lapic_sched_broadcast_entry:
 
     pop rdi
     pop rax
+
+    mov rdi, capture_no_task_exit
+    call printk
+
     iretq

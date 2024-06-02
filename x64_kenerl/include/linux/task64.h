@@ -70,5 +70,6 @@ void set_task_running(task_t *task);
 uint64_t get_task_esp0(task_t *task);
 uint64_t get_task_cs(task_t *task);
 uint64_t get_task_funtion(task_t *task);
+void task_clean(task_t *task);
 
 #endif /* __TASK64_H__ */

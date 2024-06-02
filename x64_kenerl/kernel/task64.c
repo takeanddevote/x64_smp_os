@@ -64,7 +64,11 @@ task_t *get_next_ready_task()
                 }
             }
         } else { //只有idle任务，没有waiting和ready任务，可能有sleep任务。
-            highPrioTask = g_task.tasks[0];
+            if(g_task.tasks[0]->state == TASK_READY) {
+                highPrioTask = g_task.tasks[0];
+            } else {
+                highPrioTask = NULL;
+            }
         }
     }
 
@@ -114,9 +118,10 @@ task_t *task_create(const char *name, task_fun_t function, size_t stack_size, in
 static void *idle_thread(void *ptr)
 {
     log("enter idle_thread.\n");
-    while(1) {
-        asm volatile("pause;");
-    }
+    // while(1) {
+    //     asm volatile("pause;");
+    // }
+    return NULL;
 }
 
 static void *init_thread(void *ptr)
@@ -170,4 +175,9 @@ uint64_t get_task_funtion(task_t *task)
 uint64_t get_task_ss(task_t *task)
 {
     return task->ss;
+}
+
+void task_clean(task_t *task)
+{
+    debugsit
 }

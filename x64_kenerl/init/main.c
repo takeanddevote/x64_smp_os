@@ -9,20 +9,20 @@ void x64_ap_main(void)
 {
     init_ap_idt(); //和bsp共享idt
     ap_local_apic_init(); //使能本地apic。
-    __asm volatile("sti;");
 
     kpcr_create();
     kpcr_swapgs();
     int cpuid = kpcr_get_offset(0);
     uint64_t stack = kpcr_get_offset(24);
-    kpcr_swapgs();
-
-    printk("ap kpcr %d stack %x init suceess..\n", cpuid, stack);
-
     asm volatile(
         "mov rsp, rax;" 
         :: "a"(stack)
     );
+    kpcr_swapgs();
+    __asm volatile("sti;"); //必须设置好栈再开中断，不然广播调度消息时，多ap有几率共用一个栈，导致异常
+
+
+    printk("ap kpcr %d stack %x init suceess..\n", cpuid, stack);
 
     //初始化专属数据区
     
@@ -58,9 +58,10 @@ int x64_kernel_main()
     apic_init();
     ap_init();
     task_init();
+
+    delay_s(1);
     apic_broadcast_message_interrupt(INTER_ID_SCHED_BROADCAST);
 
-    // lapic_timer_cycle_start(INTER_ID_LAPIC_TIMER, 50000000*10);
     while(1) {
         asm volatile("hlt;");
         // kpcr_swapgs();
