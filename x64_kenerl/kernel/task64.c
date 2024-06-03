@@ -103,7 +103,7 @@ task_t *task_create(const char *name, task_fun_t function, size_t stack_size, in
         kfree_s(task, sizeof(task_t));
         return NULL;
     }
-
+    // debug("create task name %s %p stack %p.\n", name, task, task->stack);
     task->pid = get_free_task_index();
     strcpy(task->name, name);
     task->state = TASK_INIT;
@@ -132,9 +132,9 @@ static void *idle_thread(void *ptr)
 static void *init_thread(void *ptr)
 {
    log("cpu %d enter init_thread.\n", get_lapic_id());
-    while(1) {
-        asm volatile("hlt;");
-    }
+    // while(1) {
+    //     asm volatile("hlt;");
+    // }
     return NULL;
 }
 
@@ -186,7 +186,7 @@ uint64_t get_task_ss(task_t *task)
 
 void task_clean(task_t *task)
 {
-    debugsit
+    // debug("name %s %p stack %p.\n", task->name, task, task->stack);
     spin_lock(&g_task.task_lock);
     task->state = TASK_DIED;
     kfree_s(task->stack, task->stack_length);

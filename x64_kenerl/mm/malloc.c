@@ -3,6 +3,7 @@
 #include "libs/string.h"
 #include "linux/printk.h"
 #include "linux/spinlock.h"
+#include "logger.h"
 
 struct bucket_desc {
     u8 *page; //虚拟地址页空间
@@ -158,7 +159,19 @@ void kfree_s(void *ptr, size_t len)
     /* 桶没有被申请内存块，释放该桶的页空间，并把桶放进空闲桶链 */
     if(!chain->refCnt) {
         free_page(chain->page);
-        dirPos->chain = chain->next;
+
+        //TODO：更改为双向链表
+        if(dirPos->chain == chain) {
+            dirPos->chain = chain->next;
+        } else {
+            for(struct bucket_desc *pos = dirPos->chain; pos->next; pos = pos->next) {
+                if(pos->next == chain) {
+                    pos->next = chain->next;
+                    break;
+                }
+            }
+        }
+
 
         chain->next = free_bucket_chain;
         free_bucket_chain = chain;

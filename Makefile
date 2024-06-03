@@ -92,7 +92,7 @@ else ifeq ($(ARCH),X64)
 	$(Q) qemu-system-x86_64 \
 		-m 32M \
 		-boot c \
-		-cpu Nehalem -smp cores=1,threads=5	\
+		-cpu Nehalem -smp cores=1,threads=2	\
 		-hda $(KBUILD_SRC)$(HD_IMG_NAME)	\
 		-nographic \
 		&
@@ -115,7 +115,7 @@ else ifeq ($(ARCH),X64)
 		-boot c \
 		-cpu Nehalem -smp cores=1,threads=2	\
 		-hda $(KBUILD_SRC)$(HD_IMG_NAME) \
-		-serial mon:stdio \
+		-nographic \
 		-s -S 	\
 		&
 endif
