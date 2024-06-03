@@ -9,6 +9,7 @@ typedef struct {
     uint64_t esp3;  //用户态任务栈
     uint64_t stack;  //不运行任务时的原始栈
     task_t *task;   //正在执行的任务
+    uint64_t temp; //临时变量，保存上下文中临时存储EIP，避免使用全局变量增加自旋锁
 } kpcr_t;
 
 kpcr_t *kpcr_create(void);

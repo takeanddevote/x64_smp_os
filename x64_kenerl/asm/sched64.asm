@@ -9,6 +9,8 @@ extern get_task_funtion
 extern lapic_send_eoi
 extern task_clean
 extern get_next_ready_task
+extern store_context_to_stack
+extern restore_context_from_stack
 global first_sched_task
 global sched_task
 global task_exit
@@ -90,43 +92,15 @@ task_exit:
     cmp rax, 0
     je .exit
 
+    ; 存在ready任务，主动切换任务
+    
+    
 .exit: ; 没有ready的任务，回到x64_ap_main或x64_kernel_main死循环处
-    pop rax
-
-    cmp rax, 1  ; 判断跨态标志
-    je .cross
-
-    pop rdi ; ss0 ; 不跨态下恢复ss0；跨态则构造返回栈中cpu自动恢复ss3
-    mov ss, di
-
-.cross:
-    pop rdi ;gs
-    mov gs, di
-    pop rdi ;fs
-    mov fs, di
-    pop rdi ;ds
-    mov ds, di
-    pop r15
-    pop r14
-    pop r13
-    pop r12
-    pop r11
-    pop r10
-    pop r9
-    pop r8
-    pop rbp
-    pop rsi
-    pop rdx
-    pop rdx
-    pop rbx
-    pop rdi
-    pop rax
-    ;原始栈就保存着返回栈，因此不需要重新构造
+    call restore_context_from_stack
 .ret:
     iretq
 
 .hlt:
     hlt
     jmp .hlt
-
 

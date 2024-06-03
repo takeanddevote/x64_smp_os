@@ -45,16 +45,6 @@ IPI_TEST_handler_entry1:
     call lapic_send_eoi
     iretq
 
-; 不跨态，栈上每个寄存器占8字节：rip cs eflags
-; 跨态，栈上每个寄存器占8字节：rip cs eflags rsp ss
-global lapic_timer_entry
-lapic_timer_entry:
-
-    mov rdi, lapic_timer_interrupt_msg
-    call printk
-    call lapic_send_eoi
-    iretq
-
 
 global lapic_sched_broadcast_entry
 extern spin_lock
@@ -66,9 +56,10 @@ extern set_task_running
 extern first_sched_task
 extern sched_task
 extern get_first_sched_flag
+extern store_context_to_stack
+extern restore_context_from_stack
 lapic_sched_broadcast_entry:
-    push rax
-    push rdi
+    call store_context_to_stack ; 因为不管走哪条路，都会调用函数，因此需要开始处保存上下文到栈中
 
 .check_task_runing:
     swapgs
@@ -84,48 +75,14 @@ lapic_sched_broadcast_entry:
 
     call get_next_ready_task
     cmp rax, 0  ; 如果不是第一个抢到锁的，则任务可能已经被抢光了,则返回断点处
-    je .exit
+    jne .seize_task
 
-.save_context:; 抢到任务了,保存上下文到栈中
-    push rbx
-    push rcx
-    push rdx
-    ; push rdi
-    push rsi
-    push rbp
-    push r8
-    push r9
-    push r10
-    push r11
-    push r12
-    push r13
-    push r14
-    push r15
-    mov rcx, ds
-    push rcx    ; 如果是push一个寄存器，压栈的字节数跟指定寄存器长度有关，比如push ax，则压栈2个字节，push rax则压栈8字节；对于常数push 1则默认压栈8字节
-    mov rcx, fs
-    push rcx
-    mov rcx, gs
-    push rcx
+    ;没抢到任务，释放锁、发送EOI、恢复上下文、退出
+    mov rdi, taskspinlock
+    call spin_unlock
+    jmp .exit
 
-    ; 通过压栈的cs和当前的cs比对，判断是否跨态；判断的目的是，如果跨态则不需要保存ss和rsp了，因为跨态已经压栈了ss核rsp
-    ; 如果不跨态则需要保存ss和esp
-    mov rdi, [rsp+18*8+8]
-    mov rcx, cs
-    and rdi, 0b111
-    and rcx, 0b111
-    cmp rdi, rcx
-    je  .not_cross
-
-    push 1  ;标记跨态
-    jmp .save_context_end
-    
-.not_cross:
-    mov rdi, ss ; 不用清零rdi，这里是把ss赋值给整个rdi，不足的位数补零
-    push rdi ;r3 ss
-    push 0  ;标记不跨态
-
-.save_context_end:
+.seize_task:    ;抢到任务了
     ; 把任务指针存进kpcr里；
     swapgs
     mov [gs:32], rax
@@ -148,6 +105,7 @@ lapic_sched_broadcast_entry:
     je .sched_first
 
     call sched_task
+
 .hlt:
     hlt
     jmp .hlt
@@ -157,20 +115,54 @@ lapic_sched_broadcast_entry:
     jmp .hlt
 
 .exit:  ;退出返回断点处
-    mov rdi, taskspinlock
-    call spin_unlock
-    ; mov rdi, lapic_sched_interrupt_msg
-    ; call printk
-    call lapic_send_eoi
-
-    pop rdi
-    pop rax
-
+    ; debug
     swapgs
     mov rsi, [gs:0]
     swapgs
-
     mov rdi, capture_no_task_exit
     call printk
 
+    call lapic_send_eoi     ;发送EOI
+    call restore_context_from_stack ;恢复上下文
+    iretq
+
+
+
+
+; 不跨态，栈上每个寄存器占8字节：rip cs eflags
+; 跨态，栈上每个寄存器占8字节：rip cs eflags rsp ss
+global lapic_timer_entry
+lapic_timer_entry:
+
+    push rax
+    push rdi
+
+; 判断当前是否有任务在执行，有则先自减时间片判断是否要切换任务
+;   1、需要切换任务，则保存上下文到任务栈中。再判断是否有ready任务可以切换，有则切换ready任务，没有则恢复原始栈并返回。
+;   2、不需要切换任务，则恢复栈平衡后，继续执行任务。
+; 当前没有任务执行，则判断是否有ready任务，没有直接退出，有则保存上下文到原始栈，再切任务。
+.check_task_runing: 
+    swapgs
+    mov rax, [gs:32]
+    swapgs
+
+    cmp rax, 0
+    jne .no_task_running
+
+.task_running:
+
+
+.no_task_running:
+    call get_next_ready_task
+    cmp rax, 0
+    je .exit
+
+
+.check_ready_task:
+
+
+
+.exit:
+    pop rdi
+    pop rax
     iretq

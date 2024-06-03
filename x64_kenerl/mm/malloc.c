@@ -124,6 +124,7 @@ void kfree_s(void *ptr, size_t len)
     3、再把内存块插入空闲内存块链表中。
     4、如果桶引用次数为0，即桶的内存块没有被使用，则释放页空间，并从桶链中移除该桶，放回空闲桶链中。
  */
+    spin_lock(&lock);
     struct bucket_dir *dirPos = g_bucket_dir;
     for(;dirPos->size != 0; ++dirPos) { 
         if(dirPos->size >= len)
@@ -131,6 +132,7 @@ void kfree_s(void *ptr, size_t len)
     }
 
     if(!dirPos->size) {
+        spin_unlock(&lock);
         printk("Not found %d bytes memory block.\n", len);
         return;
     }
@@ -143,6 +145,7 @@ void kfree_s(void *ptr, size_t len)
     }
 
     if(!chain) {
+        spin_unlock(&lock);
         printk("Not found memory block address %p.\n", ptr);
         return;
     }
@@ -160,5 +163,5 @@ void kfree_s(void *ptr, size_t len)
         chain->next = free_bucket_chain;
         free_bucket_chain = chain;
     }
-    
+    spin_unlock(&lock);
 }

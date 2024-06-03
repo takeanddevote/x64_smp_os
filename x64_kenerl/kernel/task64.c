@@ -185,6 +185,7 @@ uint64_t get_task_ss(task_t *task)
 
 void task_clean(task_t *task)
 {
+    debugsit
     task->state = TASK_DIED;
     kfree_s(task->stack, task->stack_length);
     kfree_s(task, sizeof(task_t));

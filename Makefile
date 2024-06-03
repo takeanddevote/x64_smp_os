@@ -94,7 +94,7 @@ else ifeq ($(ARCH),X64)
 		-boot c \
 		-cpu Nehalem -smp cores=1,threads=5	\
 		-hda $(KBUILD_SRC)$(HD_IMG_NAME)	\
-		-serial mon:stdio \
+		-nographic \
 		&
 
 endif
