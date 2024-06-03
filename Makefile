@@ -87,8 +87,8 @@ qemu: all
 ifeq ($(ARCH),X86)
 	$(Q) qemu-system-i386 -m 32M -boot c -hda $(KBUILD_SRC)$(HD_IMG_NAME)
 else ifeq ($(ARCH),X64)
-	$(Q) $(shell ps -e | grep qemu | cut -d' ' -f2 | xargs kill)
 	$(Q) clear
+	$(Q) ps -e | grep qemu | sed 's/^[ \t]*//' | cut -d' ' -f1 | xargs kill -9
 	$(Q) qemu-system-x86_64 \
 		-m 32M \
 		-boot c \
@@ -108,12 +108,12 @@ ifeq ($(ARCH),X86)
 		-hda $(KBUILD_SRC)$(HD_IMG_NAME) \
 		-s -S -nographic
 else ifeq ($(ARCH),X64)
-	$(Q) $(shell ps -e | grep qemu | cut -d' ' -f2 | xargs kill)
 	$(Q) clear
+	$(Q) ps -e | grep qemu | sed 's/^[ \t]*//' | cut -d' ' -f1 | xargs kill -9
 	$(Q) qemu-system-x86_64 \
 		-m 32M \
 		-boot c \
-		-cpu Nehalem -smp cores=1,threads=3	\
+		-cpu Nehalem -smp cores=1,threads=2	\
 		-hda $(KBUILD_SRC)$(HD_IMG_NAME) \
 		-serial mon:stdio \
 		-s -S 	\

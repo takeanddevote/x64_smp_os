@@ -11,6 +11,7 @@ extern task_clean
 extern get_next_ready_task
 extern store_context_to_stack
 extern restore_context_from_stack
+extern get_first_sched_flag
 global first_sched_task
 global sched_task
 global task_exit
@@ -35,11 +36,13 @@ first_sched_task:
     cmp rax, rcx    ;这里简单判断，如果特权级不相等，则认为任务是用户态任务，因为调度函数是在内核态执行的。
     je .sched_kernel_task
 
+;调度用户态任务
 .sched_user_task:
 
     jmp switch
 
-.sched_kernel_task:
+;调度内核态任务
+.sched_kernel_task: 
     ; 在qemu下发现即使不跨态，iretq也会弹出5个值，因此得按照跨态来构造返回栈
     call get_task_ss    ; ss
     push rax
@@ -70,11 +73,12 @@ first_sched_task:
     mov fs, ax
 
 switch:
-    call lapic_send_eoi
     iretq
 
+; 任务不是第一次被调度，因此直接恢复上下文即可完成调度
 sched_task:
-    jmp $
+    call restore_context_from_stack
+    iretq
 
 
 task_exit:
@@ -92,12 +96,25 @@ task_exit:
     cmp rax, 0
     je .exit
 
+    swapgs
+    mov [gs:32], rax
+    swapgs
+
     ; 存在ready任务，主动切换任务
-    
+    mov rdi, rax
+    call get_first_sched_flag ;判断是否是第一次调度
+    cmp rax, 1
+    je .sched_first
+
+    call sched_task
+    jmp .hlt
+
+.sched_first:
+    call first_sched_task
+    jmp .hlt
     
 .exit: ; 没有ready的任务，回到x64_ap_main或x64_kernel_main死循环处
     call restore_context_from_stack
-.ret:
     iretq
 
 .hlt:

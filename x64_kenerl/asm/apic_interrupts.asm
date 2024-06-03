@@ -97,6 +97,7 @@ lapic_sched_broadcast_entry:
     mov rdi, taskspinlock
     call spin_unlock
 
+    call lapic_send_eoi
     mov rdi, [gs:32]
     swapgs
 

@@ -29,7 +29,7 @@ task_t *get_next_ready_task()
 
     spin_lock(&g_task.task_lock);
     /* 当前情况下，有n中任务类型：idle任务、ready任务、waiting任务（时间片执行完了）、睡眠任务 */
-    for(int i = 1; i < TASK_MAX_NUMS; ++i) {
+    for(int i = 0; i < TASK_MAX_NUMS; ++i) {
         if(!g_task.tasks[i])
             continue;
 
@@ -124,7 +124,7 @@ static void *idle_thread(void *ptr)
 {
     log("cpu %d enter idle_thread.\n", get_lapic_id());
     // while(1) {
-    //     asm volatile("pause;");
+    //     asm volatile("hlt;");
     // }
     return NULL;
 }
@@ -132,9 +132,9 @@ static void *idle_thread(void *ptr)
 static void *init_thread(void *ptr)
 {
    log("cpu %d enter init_thread.\n", get_lapic_id());
-    // while(1) {
-    //     asm volatile("pause;");
-    // }
+    while(1) {
+        asm volatile("hlt;");
+    }
     return NULL;
 }
 
@@ -142,8 +142,9 @@ int task_init()
 {
     spin_lock_init(&g_task.task_lock);
 
-    task_create("idle", idle_thread, PAGE_SIZE, 0);
-    // task_create("init", init_thread, PAGE_SIZE, 4);
+    task_create("idle", idle_thread, PAGE_SIZE, 4);
+    task_create("init1", init_thread, PAGE_SIZE, 3);
+    task_create("init2", init_thread, PAGE_SIZE, 3);
     return 0;
 }
 
@@ -186,11 +187,11 @@ uint64_t get_task_ss(task_t *task)
 void task_clean(task_t *task)
 {
     debugsit
+    spin_lock(&g_task.task_lock);
     task->state = TASK_DIED;
     kfree_s(task->stack, task->stack_length);
     kfree_s(task, sizeof(task_t));
 
-    spin_lock(&g_task.task_lock);
     g_task.tasks[task->pid] = NULL;
     spin_unlock(&g_task.task_lock);
 }
