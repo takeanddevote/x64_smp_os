@@ -143,6 +143,9 @@ extern set_task_waiting
 extern set_task_esp0
 lapic_timer_entry:
     call store_context_to_stack
+    
+    mov rdi, taskspinlock
+    call spin_lock
 
 ; 判断当前是否有任务在执行，有则先自减时间片判断是否要切换任务
 ;   1、需要切换任务，则保存上下文到任务栈中。再判断是否有ready任务可以切换，有则切换ready任务，没有则恢复原始栈并返回。
@@ -190,18 +193,27 @@ try_to_switch_task: ; 切换任务，但不一定成功
     cmp rax, 1
     je .sched_first
 
+    mov rdi, taskspinlock
+    call spin_unlock
+
     call sched_task
     jmp hlt
 
 
 .sched_first:
     call reset_first_sched_flag ;去掉第一次调度标志
-    
+
+    mov rdi, taskspinlock
+    call spin_unlock
+
     call first_sched_task
     jmp hlt
 
 
 exit:
+    mov rdi, taskspinlock
+    call spin_unlock
+
     call lapic_send_eoi     ;发送EOI
     ; call set_apic_timer_one_shot
     call restore_context_from_stack

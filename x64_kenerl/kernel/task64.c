@@ -27,7 +27,7 @@ task_t *get_next_ready_task()
     task_t *highPrioTask = NULL;
     bool hasWaitTask = false; //有 TASK_WAITING 状态的任务
 
-    spin_lock(&g_task.task_lock);
+    // spin_lock(&g_task.task_lock);
     /* 当前情况下，有n中任务类型：idle任务、ready任务、waiting任务（时间片执行完了）、睡眠任务 */
     for(int i = 0; i < TASK_MAX_NUMS; ++i) {
         if(!g_task.tasks[i])
@@ -80,7 +80,7 @@ task_t *get_next_ready_task()
     } else {
         debug("cpu %d get no task.\n", get_lapic_id());
     }
-    spin_unlock(&g_task.task_lock);
+    // spin_unlock(&g_task.task_lock);
     return highPrioTask;
 }
 
@@ -148,11 +148,20 @@ int task_init()
 {
     spin_lock_init(&g_task.task_lock);
 
-    task_create("idle", idle_thread, PAGE_SIZE, 5);
-    task_create("init1", init_thread, PAGE_SIZE, 4);
+    task_create("init0", idle_thread, PAGE_SIZE, 3);
+    task_create("init1", init_thread, PAGE_SIZE, 3);
     task_create("init2", init_thread, PAGE_SIZE, 3);
-    task_create("init3", init_thread, PAGE_SIZE, 2);
-    task_create("init4", init_thread, PAGE_SIZE, 1);
+    task_create("init3", init_thread, PAGE_SIZE, 3);
+    task_create("init4", init_thread, PAGE_SIZE, 3);
+    task_create("init5", init_thread, PAGE_SIZE, 3);
+    task_create("init6", init_thread, PAGE_SIZE, 3);
+    task_create("init7", init_thread, PAGE_SIZE, 3);
+    task_create("init8", init_thread, PAGE_SIZE, 3);
+    task_create("init9", init_thread, PAGE_SIZE, 3);
+    task_create("inita", init_thread, PAGE_SIZE, 3);
+    task_create("initb", init_thread, PAGE_SIZE, 3);
+    task_create("initc", init_thread, PAGE_SIZE, 3);
+    task_create("initd", init_thread, PAGE_SIZE, 3);
     return 0;
 }
 
