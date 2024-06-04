@@ -148,9 +148,10 @@ int task_init()
 {
     spin_lock_init(&g_task.task_lock);
 
-    task_create("idle", idle_thread, PAGE_SIZE, 1);
-    task_create("init1", init_thread, PAGE_SIZE, 1);
-    task_create("init2", init_thread, PAGE_SIZE, 1);
+    task_create("idle", idle_thread, PAGE_SIZE, 5);
+    task_create("init1", init_thread, PAGE_SIZE, 4);
+    task_create("init2", init_thread, PAGE_SIZE, 3);
+    task_create("init3", init_thread, PAGE_SIZE, 2);
     task_create("init4", init_thread, PAGE_SIZE, 1);
     return 0;
 }

@@ -9,6 +9,7 @@ void x64_ap_main(void)
 {
     init_ap_idt(); //和bsp共享idt
     ap_local_apic_init(); //使能本地apic。
+    lapic_timer_cycle_start(INTER_ID_LAPIC_TIMER, 50000000*10);
 
     kpcr_create();
     kpcr_swapgs();
@@ -67,7 +68,7 @@ int x64_kernel_main()
 
     delay_s(1);
     lapic_timer_cycle_start(INTER_ID_LAPIC_TIMER, 50000000*10);
-    apic_broadcast_message_interrupt(INTER_ID_SCHED_BROADCAST);
+    // apic_broadcast_message_interrupt(INTER_ID_SCHED_BROADCAST);
 
     while(1) {
         asm volatile("hlt;");
