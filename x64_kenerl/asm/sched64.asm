@@ -12,6 +12,8 @@ extern get_next_ready_task
 extern store_context_to_stack
 extern restore_context_from_stack
 extern get_first_sched_flag
+extern reset_first_sched_flag
+extern get_task_esp0
 global first_sched_task
 global sched_task
 global task_exit
@@ -77,6 +79,12 @@ switch:
 
 ; 任务不是第一次被调度，因此直接恢复上下文即可完成调度
 sched_task:
+    swapgs
+    mov rdi, [gs:32]
+    call get_task_esp0
+    mov rsp, rax    ; 切到任务栈
+    swapgs
+
     call restore_context_from_stack
     iretq
 
@@ -110,6 +118,8 @@ task_exit:
     jmp .hlt
 
 .sched_first:
+    call reset_first_sched_flag ;去掉第一次调度标志
+
     call first_sched_task
     jmp .hlt
     

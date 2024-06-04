@@ -65,11 +65,16 @@ int task_init();
 task_t *task_create(const char *name, task_fun_t function, size_t stack_size, int priority);
 task_t *get_next_ready_task();
 bool get_first_sched_flag(task_t *task);
-void set_first_sched_flag(task_t *task, bool flag);
+void reset_first_sched_flag(task_t *task);
 void set_task_running(task_t *task);
+void set_task_waiting(task_t *task);
 uint64_t get_task_esp0(task_t *task);
+uint64_t get_task_esp3(task_t *task);
+void set_task_esp0(task_t *task, uint64_t esp0);
+void set_task_esp3(task_t *task, uint64_t esp3);
 uint64_t get_task_cs(task_t *task);
 uint64_t get_task_funtion(task_t *task);
 void task_clean(task_t *task);
+int64_t decrease_task_couter(task_t *task);
 
 #endif /* __TASK64_H__ */

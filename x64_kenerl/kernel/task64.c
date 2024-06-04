@@ -74,7 +74,10 @@ task_t *get_next_ready_task()
         }
     }
     if(highPrioTask) {
+        debug("cpu %d get task %s.\n", get_lapic_id(),highPrioTask->name);
         highPrioTask->state = TASK_RUNNING;
+    } else {
+        debug("cpu %d get no task.\n", get_lapic_id());
     }
     spin_unlock(&g_task.task_lock);
     return highPrioTask;
@@ -132,9 +135,9 @@ static void *idle_thread(void *ptr)
 static void *init_thread(void *ptr)
 {
    log("cpu %d enter init_thread.\n", get_lapic_id());
-    // while(1) {
-    //     asm volatile("hlt;");
-    // }
+    while(1) {
+        asm volatile("hlt;");
+    }
     return NULL;
 }
 
@@ -145,18 +148,21 @@ int task_init()
     task_create("idle", idle_thread, PAGE_SIZE, 4);
     task_create("init1", init_thread, PAGE_SIZE, 3);
     task_create("init2", init_thread, PAGE_SIZE, 3);
+    // task_create("init4", init_thread, PAGE_SIZE, 3);
     return 0;
 }
 
 
 bool get_first_sched_flag(task_t *task)
 {
+    // debug("%d.\n", task->fisrt_sched);
     return task->fisrt_sched;
 }
 
-void set_first_sched_flag(task_t *task, bool flag)
+void reset_first_sched_flag(task_t *task)
 {
-    task->fisrt_sched = flag;
+    debug("cpu %d task %s.\n", get_lapic_id(), task->name);
+    task->fisrt_sched = false;
 }
 
 void set_task_running(task_t *task)
@@ -164,9 +170,29 @@ void set_task_running(task_t *task)
     task->state = TASK_RUNNING;   
 }
 
+void set_task_waiting(task_t *task)
+{
+    task->state = TASK_WAITING; 
+}
+
 uint64_t get_task_esp0(task_t *task)
 {
     return task->esp0;  
+}
+
+uint64_t get_task_esp3(task_t *task)
+{
+    return task->esp3;  
+}
+
+void set_task_esp0(task_t *task, uint64_t esp0)
+{
+    task->esp0 = esp0;
+}
+
+void set_task_esp3(task_t *task, uint64_t esp3)
+{
+    task->esp0 = esp3;
 }
 
 uint64_t get_task_cs(task_t *task)
@@ -186,7 +212,7 @@ uint64_t get_task_ss(task_t *task)
 
 void task_clean(task_t *task)
 {
-    // debug("name %s %p stack %p.\n", task->name, task, task->stack);
+    debug("cpu %d task %s exit.\n", get_lapic_id(), task->name);
     spin_lock(&g_task.task_lock);
     task->state = TASK_DIED;
     kfree_s(task->stack, task->stack_length);
@@ -194,4 +220,15 @@ void task_clean(task_t *task)
 
     g_task.tasks[task->pid] = NULL;
     spin_unlock(&g_task.task_lock);
+}
+
+int64_t decrease_task_couter(task_t *task)
+{
+    // debug("cpu %d task %s couter %d.\n", get_lapic_id(), task->name, task->counter);
+    return --task->counter;
+}
+
+void reset_task_counter(task_t *task)
+{
+    task->counter = task->priority;
 }

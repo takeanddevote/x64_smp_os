@@ -66,6 +66,7 @@ int x64_kernel_main()
     task_init();
 
     delay_s(1);
+    lapic_timer_cycle_start(INTER_ID_LAPIC_TIMER, 50000000*10);
     apic_broadcast_message_interrupt(INTER_ID_SCHED_BROADCAST);
 
     while(1) {

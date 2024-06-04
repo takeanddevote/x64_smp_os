@@ -356,7 +356,7 @@ int apic_broadcast_message_interrupt(u8 vector)
     icr_val_l.destination_shortland = 0b10;
     *ICR_H = *((u32 *)&icr_val_h);
     *ICR_L = *((u32 *)&icr_val_l); 
-    asm volatile("jmp $;");
+    // asm volatile("jmp $;");
     if(!check_IPI_success()) {
         err("bsp apic send IPI fail.\n");
         return -1;
