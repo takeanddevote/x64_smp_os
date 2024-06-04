@@ -52,10 +52,11 @@ task_t *get_next_ready_task()
 
     if(!highPrioTask ) {
         if(hasWaitTask) { //没有ready任务，且含有waiting任务，此时需要重置waiting任务的时间片
-            for(int i = 1; i < TASK_MAX_NUMS; ++i) {
+            for(int i = 0; i < TASK_MAX_NUMS; ++i) {
                 if(!g_task.tasks[i] || g_task.tasks[i]->state != TASK_WAITING)
                     continue;
                 g_task.tasks[i]->counter = g_task.tasks[i]->priority; //重置时间片
+                g_task.tasks[i]->state = TASK_READY;
                 if(!highPrioTask) {
                     highPrioTask = g_task.tasks[i];
                     continue;
@@ -74,7 +75,7 @@ task_t *get_next_ready_task()
         }
     }
     if(highPrioTask) {
-        debug("cpu %d get task %s.\n", get_lapic_id(),highPrioTask->name);
+        debug("cpu %d switch task %s.\n", get_lapic_id(),highPrioTask->name);
         highPrioTask->state = TASK_RUNNING;
     } else {
         debug("cpu %d get no task.\n", get_lapic_id());
@@ -126,9 +127,10 @@ task_t *task_create(const char *name, task_fun_t function, size_t stack_size, in
 static void *idle_thread(void *ptr)
 {
     log("cpu %d enter idle_thread.\n", get_lapic_id());
-    // while(1) {
-    //     asm volatile("hlt;");
-    // }
+    while(1) {
+        asm volatile("hlt;");
+        // debug("cpu %d idle_thread wait up.\n", get_lapic_id());
+    }
     return NULL;
 }
 
@@ -137,6 +139,7 @@ static void *init_thread(void *ptr)
    log("cpu %d enter init_thread.\n", get_lapic_id());
     while(1) {
         asm volatile("hlt;");
+        // debug("cpu %d init_thread wait up.\n", get_lapic_id());
     }
     return NULL;
 }
@@ -145,10 +148,10 @@ int task_init()
 {
     spin_lock_init(&g_task.task_lock);
 
-    task_create("idle", idle_thread, PAGE_SIZE, 4);
-    task_create("init1", init_thread, PAGE_SIZE, 3);
-    task_create("init2", init_thread, PAGE_SIZE, 3);
-    // task_create("init4", init_thread, PAGE_SIZE, 3);
+    task_create("idle", idle_thread, PAGE_SIZE, 1);
+    task_create("init1", init_thread, PAGE_SIZE, 1);
+    task_create("init2", init_thread, PAGE_SIZE, 1);
+    task_create("init4", init_thread, PAGE_SIZE, 1);
     return 0;
 }
 
@@ -161,7 +164,7 @@ bool get_first_sched_flag(task_t *task)
 
 void reset_first_sched_flag(task_t *task)
 {
-    debug("cpu %d task %s.\n", get_lapic_id(), task->name);
+    // debug("cpu %d task %s.\n", get_lapic_id(), task->name);
     task->fisrt_sched = false;
 }
 
