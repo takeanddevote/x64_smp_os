@@ -18,6 +18,9 @@ u32 KERNEL_DATA_SECTOR = (2 << 3) | 0b00;    //内核态的代码段和数据段
 #ifdef CONFIG_ARCH_X64
 u32 KERNEL_X64_CODE_SECTOR = (3 << 3) | 0b00;
 u32 KERNEL_X64_DATA_SECTOR = (4 << 3) | 0b00;
+u32 USER_X64_CODE_SECTOR = (5 << 3) | 0b011;
+u32 USER_X64_DATA_SECTOR = (6 << 3) | 0b011;
+u32 X64_TSS_SECTOR = (7 << 3) | 0b11;    //任务段选择子
 #endif
 u32 USER_CODE_SECTOR = (3 << 3) | 0b11;
 u32 USER_DATA_SECTOR = (4 << 3) | 0b11;    //用户态的代码段和数据段描述符
@@ -136,6 +139,47 @@ static void build_x64_r0_ds_desc(gdt_segment_desciptor *desc)
     desc->G = 1; //单位4KB
 }
 
+/* x64 用户态 代码段描述符 */
+static void build_x64_r3_cs_desc(gdt_segment_desciptor *desc)
+{
+    desc->segment_limit_0_15 = 0;
+    desc->segment_limit_16_19 = 0;
+
+    desc->base_address_0_15 = 0;
+    desc->base_address_16_23 = 0;
+    desc->base_address_24_31 = 0;
+
+    desc->S = 1;    //代码段
+    desc->type = 0b1000;    //只可执行
+
+    desc->DPL = 0b11;   //R3特权级
+    desc->P = 1;
+    desc->AVL = 0;
+    desc->L = 1;    // 64位长模式代码
+    desc->DB = 0; // 64位下db必须为0
+    desc->G = 1; //单位4KB
+}
+/* x64 用户态 数据描述符 */
+static void build_x64_r3_ds_desc(gdt_segment_desciptor *desc)
+{
+    desc->segment_limit_0_15 = 0;
+    desc->segment_limit_16_19 = 0;
+
+    desc->base_address_0_15 = 0;
+    desc->base_address_16_23 = 0;
+    desc->base_address_24_31 = 0;
+
+    desc->S = 1;    //数据段
+    desc->type = 0b0010;    //可读可写
+
+    desc->DPL = 0b11;   //R0特权级
+    desc->P = 1;
+    desc->AVL = 0;
+    desc->L = 1; //64位长模式代码
+    desc->DB = 0; //64位下db必须为0
+    desc->G = 1; //单位4KB
+}
+
 #endif /* CONFIG_ARCH_X64 */
 
 int gdt_init()
@@ -157,6 +201,14 @@ int gdt_init()
     g_gdtr->gdt_max_offset += 8;
     idx = (g_gdtr->gdt_max_offset / 8) - 1;
     build_x64_r0_ds_desc(&g_gdt[idx]); //r0数据段描述符
+
+    g_gdtr->gdt_max_offset += 8;
+    idx = (g_gdtr->gdt_max_offset / 8) - 1;
+    build_x64_r3_cs_desc(&g_gdt[idx]); //r3代码段描述符
+
+    g_gdtr->gdt_max_offset += 8;
+    idx = (g_gdtr->gdt_max_offset / 8) - 1;
+    build_x64_r3_ds_desc(&g_gdt[idx]); //r3数据段描述符
 
 #else
     /* 新增段描述符 */

@@ -5,6 +5,12 @@
 #include "linux/apic.h"
 #include "linux/cpu.h"
 
+void x64_user_main()
+{
+    while(1);
+}
+
+
 void x64_ap_main(void)
 {
     init_ap_idt(); //和bsp共享idt

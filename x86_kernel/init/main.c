@@ -37,7 +37,7 @@ static void prepare_4level_page_table() {
 
     memset(four_level_head_table_addr, 0, 4096);
 
-    *four_level_head_table_addr = FIRST_PDPT_ADDR | 3;
+    *four_level_head_table_addr = FIRST_PDPT_ADDR | 7;
     *(four_level_head_table_addr + 1) = 0;
 
     // 页目录指针表
@@ -45,7 +45,7 @@ static void prepare_4level_page_table() {
 
     memset(pdpt_addr, 0, 4096);
 
-    *pdpt_addr = FIRST_PDT_ADDR | 3;
+    *pdpt_addr = FIRST_PDT_ADDR | 7;
     *(pdpt_addr + 1) = 0;
 
     // 页目录表
@@ -56,7 +56,7 @@ static void prepare_4level_page_table() {
     // 采用2M分页,映射0-32M，即需要填充前16个pde。当然实际的进程肯定不会直接映射那么多，而是需要多少映射多少。
     for (size_t i = 0; i < 16; i++)
     {
-        *(pdt_addr + i*2 + 0) = i*0x200000 | 0x83;
+        *(pdt_addr + i*2 + 0) = i*0x200000 | 0x87;
         *(pdt_addr + i*2 + 1) = 0;
     }
     

@@ -92,7 +92,7 @@ static void add_task(task_t *task)
 }
 
 //创建内核态任务
-task_t *task_create(const char *name, task_fun_t function, size_t stack_size, int priority)
+task_t *ktask_create(const char *name, task_fun_t function, size_t stack_size, int priority)
 {
     task_t *task = (task_t *)kzalloc(sizeof(task_t));
     if(!task) {
@@ -107,6 +107,21 @@ task_t *task_create(const char *name, task_fun_t function, size_t stack_size, in
         kfree_s(task, sizeof(task_t));
         return NULL;
     }
+
+    /* 实际上这里分配的栈是在内核虚拟地址空间里的，而内核页表项的US位是设置为0，即只有非r3才能访问。因此要修改为1，即允许用户态访问。
+        解决办法是，创建一个段，把用户空间的代码放进这个段里，包括系统调用api等（相当于glib），这样用户空间就无法执行内核态的代码，
+        也无法访问内核区域内存。
+        当然实际肯定不能这样做，但目前内核只有一个进程，因此无法区分内核空间和用户空间，后期再实现。
+     */
+    task->user_stack_length = stack_size;
+    task->user_stack = (char *)kzalloc(stack_size);
+    if(!task->user_stack) {
+        err("create task fail.\n");
+        kfree_s(task->stack, stack_size);
+        kfree_s(task, sizeof(task_t));
+        return NULL;
+    }
+
     // debug("create task name %s %p stack %p.\n", name, task, task->stack);
     task->pid = get_free_task_index();
     strcpy(task->name, name);
@@ -116,6 +131,7 @@ task_t *task_create(const char *name, task_fun_t function, size_t stack_size, in
     task->fisrt_sched = true;
 
     task->esp0 = task->stack + stack_size;
+    task->esp3 = task->user_stack + stack_size;
     task->cs = (3 << 3) | 0b000; // 内核任务
     task->ss = task->ds = (4 << 3) | 0b000;
 
@@ -124,9 +140,61 @@ task_t *task_create(const char *name, task_fun_t function, size_t stack_size, in
     return task;
 }
 
+//创建用户态任务
+task_t *utask_create(const char *name, task_fun_t function, size_t stack_size, int priority)
+{
+    task_t *task = (task_t *)kzalloc(sizeof(task_t));
+    if(!task) {
+        err("create task fail.\n");
+        return NULL;
+    }
+
+    task->stack_length = stack_size;
+    task->stack = (char *)kzalloc(stack_size);
+    if(!task->stack) {
+        err("create task fail.\n");
+        kfree_s(task, sizeof(task_t));
+        return NULL;
+    }
+
+    /* 实际上这里分配的栈是在内核虚拟地址空间里的，而内核页表项的US位是设置为0，即只有非r3才能访问。因此要修改为1，即允许用户态访问。
+        解决办法是，创建一个段，把用户空间的代码放进这个段里，包括系统调用api等（相当于glib），这样用户空间就无法执行内核态的代码，
+        也无法访问内核区域内存。
+        当然实际肯定不能这样做，但目前内核只有一个进程，因此无法区分内核空间和用户空间，后期再实现。
+     */
+    task->user_stack_length = stack_size;
+    task->user_stack = (char *)kzalloc(stack_size);
+    if(!task->user_stack) {
+        err("create task fail.\n");
+        kfree_s(task->stack, stack_size);
+        kfree_s(task, sizeof(task_t));
+        return NULL;
+    }
+
+
+    // debug("create task name %s %p stack %p.\n", name, task, task->stack);
+    task->pid = get_free_task_index();
+    strcpy(task->name, name);
+    task->state = TASK_INIT;
+    task->counter = task->priority = priority;
+    task->function = function;
+    task->fisrt_sched = true;
+
+    task->esp0 = task->stack + stack_size;
+    task->esp3 = task->user_stack + stack_size;
+    task->cs = (3 << 3) | 0b000; // 内核任务
+    task->ss = task->ds = (4 << 3) | 0b000;
+
+    task->state = TASK_READY;
+    add_task(task);
+    return task;
+}
+
+extern void move_to_user_state();
 static void *idle_thread(void *ptr)
 {
     log("cpu %d enter idle_thread.\n", get_lapic_id());
+    move_to_user_state();
     while(1) {
         asm volatile("hlt;");
         // debug("cpu %d idle_thread wait up.\n", get_lapic_id());
@@ -148,20 +216,20 @@ int task_init()
 {
     spin_lock_init(&g_task.task_lock);
 
-    task_create("init0", idle_thread, PAGE_SIZE, 3);
-    task_create("init1", init_thread, PAGE_SIZE, 3);
-    task_create("init2", init_thread, PAGE_SIZE, 3);
-    task_create("init3", init_thread, PAGE_SIZE, 3);
-    task_create("init4", init_thread, PAGE_SIZE, 3);
-    task_create("init5", init_thread, PAGE_SIZE, 3);
-    task_create("init6", init_thread, PAGE_SIZE, 3);
-    task_create("init7", init_thread, PAGE_SIZE, 3);
-    task_create("init8", init_thread, PAGE_SIZE, 3);
-    task_create("init9", init_thread, PAGE_SIZE, 3);
-    task_create("inita", init_thread, PAGE_SIZE, 3);
-    task_create("initb", init_thread, PAGE_SIZE, 3);
-    task_create("initc", init_thread, PAGE_SIZE, 3);
-    task_create("initd", init_thread, PAGE_SIZE, 3);
+    ktask_create("init0", idle_thread, PAGE_SIZE, 3);
+    // ktask_create("init1", init_thread, PAGE_SIZE, 3);
+    // ktask_create("init2", init_thread, PAGE_SIZE, 3);
+    // ktask_create("init3", init_thread, PAGE_SIZE, 3);
+    // ktask_create("init4", init_thread, PAGE_SIZE, 3);
+    // ktask_create("init5", init_thread, PAGE_SIZE, 3);
+    // ktask_create("init6", init_thread, PAGE_SIZE, 3);
+    // ktask_create("init7", init_thread, PAGE_SIZE, 3);
+    // ktask_create("init8", init_thread, PAGE_SIZE, 3);
+    // ktask_create("init9", init_thread, PAGE_SIZE, 3);
+    // ktask_create("inita", init_thread, PAGE_SIZE, 3);
+    // ktask_create("initb", init_thread, PAGE_SIZE, 3);
+    // ktask_create("initc", init_thread, PAGE_SIZE, 3);
+    // ktask_create("initd", init_thread, PAGE_SIZE, 3);
     return 0;
 }
 

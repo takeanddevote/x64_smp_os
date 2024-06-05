@@ -1,3 +1,5 @@
+ENTRY(kernel_start)
+
 SECTIONS
 {
     . = 0x100000;      /* 设置起始地址 */

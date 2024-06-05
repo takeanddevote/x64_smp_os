@@ -53,6 +53,8 @@ typedef struct {
     uint64_t ds;
     char *stack;
     uint64_t stack_length;
+    char *user_stack;
+    uint64_t user_stack_length;
     uint64_t counter;
     uint64_t priority;
     task_state_t state;
@@ -62,7 +64,8 @@ typedef struct {
 
 
 int task_init();
-task_t *task_create(const char *name, task_fun_t function, size_t stack_size, int priority);
+task_t *ktask_create(const char *name, task_fun_t function, size_t stack_size, int priority);
+task_t *utask_create(const char *name, task_fun_t function, size_t stack_size, int priority);
 task_t *get_next_ready_task();
 bool get_first_sched_flag(task_t *task);
 void reset_first_sched_flag(task_t *task);

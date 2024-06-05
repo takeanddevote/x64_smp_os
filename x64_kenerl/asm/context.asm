@@ -1,5 +1,9 @@
 [SECTION .data]
 
+USER_X64_CODE_SECTOR    equ (5 << 3) | 0b011;
+USER_X64_DATA_SECTOR    equ (6 << 3) | 0b011;
+X64_TSS_SECTOR          equ (7 << 3) | 0b11;    //任务段选择子
+
 
 global store_context_to_stack
 global restore_context_from_stack
@@ -94,3 +98,29 @@ restore_context_from_stack:
     pop rax
     ;原始栈就保存着返回栈，因此不需要重新构造
     ret
+
+
+global move_to_user_state:
+extern x64_user_main
+extern get_task_esp3
+move_to_user_state: ; rip、cs、rflags、rsp、ss
+
+    push USER_X64_DATA_SECTOR   ;ss
+
+    swapgs
+    mov rdi, [gs:32]
+    swapgs
+    call get_task_esp3
+    push rax    ;rsp
+    
+    pushfq      ;rflags，当前中断是开着的，因此直接使用当前的rflags
+
+    push USER_X64_CODE_SECTOR   ;cs
+    push x64_user_main  ;rip
+
+    mov ax, USER_X64_DATA_SECTOR
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    iretq
