@@ -6,3 +6,5 @@ obj-y += ioremap.o
 obj-y += cpu.o
 obj-y += task64.o
 obj-y += sched.o
+obj-y += gdt64.o
+obj-y += exceptionErrorCode.o

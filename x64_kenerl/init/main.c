@@ -4,6 +4,7 @@
 #include "linux/idt.h"
 #include "linux/apic.h"
 #include "linux/cpu.h"
+#include "linux/gdt64.h"
 
 void x64_user_main()
 {
@@ -14,6 +15,7 @@ void x64_user_main()
 void x64_ap_main(void)
 {
     init_ap_idt(); //和bsp共享idt
+    init_tss_current_core(); //ap核初始化tss
     ap_local_apic_init(); //使能本地apic。
     lapic_timer_cycle_start(INTER_ID_LAPIC_TIMER, 5000000);
 
@@ -68,6 +70,7 @@ int x64_kernel_main()
     init_serial();
     mm_init();
     init_idt();
+    init_tss_current_core(); //bsp核初始化tss
     apic_init();
     ap_init();
     task_init();

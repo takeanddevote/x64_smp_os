@@ -11,6 +11,17 @@ void print_hex(unsigned char *buf, int len)
     p_printf(" %d.\n", len);
 }
 
+void print_hex_qword(u64 *buf, int len)
+{
+    int i = 0; 
+    if(len == 0)
+        return;
+    for(i = 0; i < len; i++){
+        p_printf("0x%.16x ", buf[i]);
+    }
+    p_printf(" %d.\n", len);
+}
+
 
 void print_nstring_label(unsigned char *buf, int len, char *label)
 {

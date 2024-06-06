@@ -217,19 +217,19 @@ int task_init()
     spin_lock_init(&g_task.task_lock);
 
     ktask_create("init0", idle_thread, PAGE_SIZE, 3);
-    // ktask_create("init1", init_thread, PAGE_SIZE, 3);
-    // ktask_create("init2", init_thread, PAGE_SIZE, 3);
-    // ktask_create("init3", init_thread, PAGE_SIZE, 3);
-    // ktask_create("init4", init_thread, PAGE_SIZE, 3);
-    // ktask_create("init5", init_thread, PAGE_SIZE, 3);
-    // ktask_create("init6", init_thread, PAGE_SIZE, 3);
-    // ktask_create("init7", init_thread, PAGE_SIZE, 3);
-    // ktask_create("init8", init_thread, PAGE_SIZE, 3);
-    // ktask_create("init9", init_thread, PAGE_SIZE, 3);
-    // ktask_create("inita", init_thread, PAGE_SIZE, 3);
-    // ktask_create("initb", init_thread, PAGE_SIZE, 3);
-    // ktask_create("initc", init_thread, PAGE_SIZE, 3);
-    // ktask_create("initd", init_thread, PAGE_SIZE, 3);
+    ktask_create("init1", init_thread, PAGE_SIZE, 3);
+    ktask_create("init2", init_thread, PAGE_SIZE, 3);
+    ktask_create("init3", init_thread, PAGE_SIZE, 3);
+    ktask_create("init4", init_thread, PAGE_SIZE, 3);
+    ktask_create("init5", init_thread, PAGE_SIZE, 3);
+    ktask_create("init6", init_thread, PAGE_SIZE, 3);
+    ktask_create("init7", init_thread, PAGE_SIZE, 3);
+    ktask_create("init8", init_thread, PAGE_SIZE, 3);
+    ktask_create("init9", init_thread, PAGE_SIZE, 3);
+    ktask_create("inita", init_thread, PAGE_SIZE, 3);
+    ktask_create("initb", init_thread, PAGE_SIZE, 3);
+    ktask_create("initc", init_thread, PAGE_SIZE, 3);
+    ktask_create("initd", init_thread, PAGE_SIZE, 3);
     return 0;
 }
 

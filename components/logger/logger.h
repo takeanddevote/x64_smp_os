@@ -1,8 +1,10 @@
 #ifndef __LOGGER_H__
 #define __LOGGER_H__
 #include "component_wapper.h"
+#include "linux/type.h"
 
 void print_hex(unsigned char *buf, int len);
+void print_hex_qword(u64 *buf, int len);
 void print_nstring_label(unsigned char *buf, int len, char *label);
 void print_nstring(unsigned char *buf, int len);
 

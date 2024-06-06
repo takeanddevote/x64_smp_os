@@ -55,6 +55,7 @@ global inter_entry17
 global inter_entry18
 global inter_entry19
 extern get_lapic_id
+extern handle_normal_errcode
 _inter_entry:
     push rsi
     ; swapgs
@@ -116,20 +117,27 @@ inter_entry11:
 inter_entry12:
     mov rsi, 12
     jmp _inter_entry
+
 inter_entry13:
-    mov rsi, 13
-    jmp _inter_entry
+    mov rdx, 13
+    mov rsi, rsp
+    mov rdi, [rsp]
+    call handle_normal_errcode
+    
+    cli
+    jmp $
+    
+
+extern handle_PF_errcode
 inter_entry14:
-    mov rsi, [rsp]
-    mov rdi, exception_info
-    call printk
+    mov rdx, 14
+    mov rsi, rsp
+    mov rdi, [rsp]
+    call handle_PF_errcode
 
-    mov rsi, cr2    ; 导致页面错误的线性地址
-    mov rdi, exception_info
-    call printk
+    cli
+    jmp $
 
-    mov rsi, 14
-    jmp _inter_entry
 inter_entry15:
     mov rsi, 15
     jmp _inter_entry
