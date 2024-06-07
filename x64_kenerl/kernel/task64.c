@@ -122,7 +122,7 @@ task_t *ktask_create(const char *name, task_fun_t function, size_t stack_size, i
         return NULL;
     }
 
-    // debug("create task name %s %p stack %p.\n", name, task, task->stack);
+    // debug("create task name %s %p stack %p user_stack %p.\n", name, task, task->stack, task->user_stack);
     task->pid = get_free_task_index();
     strcpy(task->name, name);
     task->state = TASK_INIT;
@@ -260,6 +260,12 @@ uint64_t get_task_esp0(task_t *task)
 {
     return task->esp0;  
 }
+
+uint64_t get_task_esp0_button(task_t *task)
+{
+    return task->stack;  
+}
+
 
 uint64_t get_task_esp3(task_t *task)
 {

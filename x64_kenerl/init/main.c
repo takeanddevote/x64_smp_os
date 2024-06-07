@@ -70,8 +70,8 @@ int x64_kernel_main()
     init_serial();
     mm_init();
     init_idt();
-    init_tss_current_core(); //bsp核初始化tss
     apic_init();
+    init_tss_current_core(); //bsp核初始化tss
     ap_init();
     task_init();
 

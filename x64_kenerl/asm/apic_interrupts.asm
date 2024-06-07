@@ -141,16 +141,19 @@ global lapic_timer_entry
 extern decrease_task_couter
 extern set_task_waiting
 extern set_task_esp0
+extern memcpy
+extern get_task_esp0
+extern get_task_esp0_button
 lapic_timer_entry:
-    call store_context_to_stack
-    
+    call store_context_to_stack ;压入20个值
     mov rdi, taskspinlock
     call spin_lock
 
 ; 判断当前是否有任务在执行，有则先自减时间片判断是否要切换任务
 ;   1、需要切换任务，则保存上下文到任务栈中。再判断是否有ready任务可以切换，有则切换ready任务，没有则恢复原始栈并返回。
 ;   2、不需要切换任务，则恢复栈平衡后，继续执行任务。
-;   3、对于用户态任务，当前栈是tss设置的内核栈，不是任务栈。当切换任务，如果直接保存上下文，是保存在内核栈上了，下次再切回来就会导致异常，
+;   3、对于用户态任务，当前栈是tss设置的内核栈，不是任务栈。当切换任务，如果直接保存上下文，是保存在内核栈上了，当前的内核栈的rsp也保存在任务描述符中，
+;       下次切回该任务时，还是使用内核栈，如果该核中间发生了系统调用（单核共用一个内核栈），栈就会被改变，这时候再恢复上下文就异常了。
 ;       因此需要判断用户态任务，切栈，把上下文保存到任务自己的内核栈中。
 ; 当前没有任务执行，则判断是否有ready任务，没有直接退出，有则保存上下文到原始栈，再切任务。
 .check_task_runing: 
@@ -167,6 +170,31 @@ lapic_timer_entry:
     ja exit
 
     ; 当前任务时间片已执行完，切换任务
+
+    ; 切栈。跨态，则切到任务内核栈，并保存上下文到任务内核栈中
+    mov rax, [rsp]
+    cmp rax, 1
+    jne .noskip
+
+.skip:
+    swapgs
+    mov rdi, [gs:32]
+    call get_task_esp0_button
+
+    mov rdx, 25*8
+    mov rsi, rsp
+    lea rdi, [rax+25*8]
+    call memcpy
+
+    mov rdi, [gs:32]
+    call get_task_esp0_button
+    
+    lea rax, [rax+25*8]
+    mov rsp, rax    ; 切到任务内核栈
+    swapgs
+
+.noskip: ;不跨态，不用切栈
+
     swapgs
     mov rdi, [gs:32]
     call set_task_waiting   ; 设置当前任务为等待状态

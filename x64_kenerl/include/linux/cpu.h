@@ -10,6 +10,7 @@ typedef struct {
     uint64_t stack;  //不运行任务时的原始栈
     task_t *task;   //正在执行的任务
     uint64_t temp; //临时变量，保存上下文中临时存储EIP，避免使用全局变量增加自旋锁
+    uint64_t tss_stack; //tss设置的内核栈，在初始化tss时设置。
 } kpcr_t;
 
 kpcr_t *kpcr_create(void);
@@ -17,9 +18,14 @@ kpcr_t *kpcr_create(void);
 static inline uint64_t kpcr_get_offset(uint64_t offset)
 {
     asm volatile(
-        "mov rax, gs:[rcx];"
-        :
-        : "c"(offset)
+        "mov rax, gs:[rdi];"
+    );
+}
+
+static inline void kpcr_set_offset(uint64_t offset, uint64_t val) 
+{
+    asm volatile(
+        "mov gs:[rdi], rsi;"
     );
 }
 

@@ -27,7 +27,7 @@ void handle_normal_errcode(u32 error_code, u64 *stack, u64 id)
     }
     u16 selector_index = (error_code >> 3) & 0x1FFF;
     printk("### Selector index: %u.\n", selector_index);
-    printk("### stack dump: ");
+    printk("### stack dump %.8p: ", stack);
     print_hex_qword(stack, 6);
 }
 
@@ -91,13 +91,13 @@ void handle_PF_errcode(u32 error_code, u64 *stack, u64 id)
         printk("### HLAT 0: The fault is not related to SGX.\n");
     }
 
-    printk("### stack dump: ");
+    printk("### stack dump %.8p: ", stack);
     print_hex_qword(stack+1, 5);
 }
 
 void handle_CP_errcode(u32 error_code, u64 *stack, u64 id)
 {
     printk("\n####################### cpu %d : Control protection %d : code 0x%x #######################\n", get_lapic_id(), id, error_code);
-    printk("### stack dump: ");
+    printk("### stack dump %.8p: ", stack);
     print_hex_qword(stack, 6);
 }

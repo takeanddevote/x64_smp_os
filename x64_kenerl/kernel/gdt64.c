@@ -1,5 +1,7 @@
 #include "linux/gdt64.h"
+#include "linux/cpu.h"
 #include "libs/string.h"
+#include "logger.h"
 
 static gdtr_value *g_gdtr = (gdtr_value *)0x9E000;
 
@@ -29,6 +31,7 @@ void init_tss_current_core()
 
     tss_t *tss = (tss_t *)kzalloc(sizeof(tss_t));
     tss->rsp0 = (uint64_t)kzalloc(PAGE_SIZE) + PAGE_SIZE;
+    debug("tss %p.\n", tss->rsp0);
 
     tss_descriptor_t *desc = (tss_descriptor_t *)(g_gdtr->gdt_base_addr + g_gdtr->gdt_max_offset);
     build_x64_tss_desc((u64)tss, desc);
@@ -40,4 +43,9 @@ void init_tss_current_core()
     __asm__ volatile ("ltr %0" : : "r"(tss_selector));
 
     tss_index += 2; //64位下段描述符16字节，即占用两个8位描述符
+
+    //设置内核通用栈到kpcr中，在用户态任务切换中需要访问
+    kpcr_swapgs();
+    kpcr_set_offset(48, tss->rsp0);
+    kpcr_swapgs();
 }
