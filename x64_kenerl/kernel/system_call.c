@@ -1,12 +1,14 @@
 #include "linux/sys.h"
 #include "linux/type.h"
 #include "linux/printk.h"
+#include "driver/tty.h"
 #include "logger.h"
 
 
 ssize_t sys_write(int fd, const void *buf, size_t count)
 {
-    debug("fd=%d, buf=%p, count=%d.\n", fd, buf, count);
+    // debug("fd=%d, buf=%p, count=%d.\n", fd, buf, count);
+    data_out(buf,count );
     return count;
 }
 

@@ -78,7 +78,7 @@ task_t *get_next_ready_task()
         debug("cpu %d switch task %s.\n", get_lapic_id(),highPrioTask->name);
         highPrioTask->state = TASK_RUNNING;
     } else {
-        // debug("cpu %d get no task.\n", get_lapic_id());
+        debug("cpu %d get no task.\n", get_lapic_id());
     }
     // spin_unlock(&g_task.task_lock);
     return highPrioTask;
@@ -193,7 +193,7 @@ task_t *utask_create(const char *name, task_fun_t function, size_t stack_size, i
 extern void move_to_user_state();
 static void *idle_thread(void *ptr)
 {
-    log("cpu %d enter idle_thread.\n", get_lapic_id());
+    // log("cpu %d enter idle_thread.\n", get_lapic_id());
     move_to_user_state();
     while(1) {
         asm volatile("hlt;");
@@ -204,7 +204,7 @@ static void *idle_thread(void *ptr)
 
 static void *init_thread(void *ptr)
 {
-   log("cpu %d enter init_thread.\n", get_lapic_id());
+//    log("cpu %d enter init_thread.\n", get_lapic_id());
     while(1) {
         asm volatile("hlt;");
         // debug("cpu %d init_thread wait up.\n", get_lapic_id());
