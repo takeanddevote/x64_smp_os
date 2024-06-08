@@ -5,17 +5,19 @@
 #include "linux/apic.h"
 #include "linux/cpu.h"
 #include "linux/gdt64.h"
+#include "linux/syscall.h"
 
 void x64_user_main()
 {
+    asm volatile("syscall;");
     while(1);
 }
-
 
 void x64_ap_main(void)
 {
     init_ap_idt(); //和bsp共享idt
     init_tss_current_core(); //ap核初始化tss
+    syscall_init(); //初始化syscall
     ap_local_apic_init(); //使能本地apic。
     lapic_timer_cycle_start(INTER_ID_LAPIC_TIMER, 5000000);
 
@@ -72,6 +74,7 @@ int x64_kernel_main()
     init_idt();
     apic_init();
     init_tss_current_core(); //bsp核初始化tss
+    syscall_init(); //初始化syscall
     ap_init();
     task_init();
 

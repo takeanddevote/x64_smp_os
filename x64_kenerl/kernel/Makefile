@@ -8,3 +8,4 @@ obj-y += task64.o
 obj-y += sched.o
 obj-y += gdt64.o
 obj-y += exceptionErrorCode.o
+obj-y += syscall.o

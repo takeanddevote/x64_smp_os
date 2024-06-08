@@ -57,27 +57,14 @@ global inter_entry19
 extern get_lapic_id
 extern handle_normal_errcode
 _inter_entry:
-    push rsi
-    ; swapgs
-    ; mov rdi, [gs:0]
-    ; swapgs
-    call get_lapic_id
-
-    mov rdx, rax
-    pop rsi
-    mov rdi, common_interrupt_msg
-    mov eax, 0
-    call printk
-
-    ; mov rcx, [rsp+16]
-    ; mov rdx, [rsp+8]
-    mov rsi, [rsp]
-    mov rdi, exception_info
-    mov eax, 0
-    call printk
-
+    mov rdx, 13
+    mov rsi, rsp
+    mov rdi, [rsp]
+    call handle_normal_errcode
+    
+    cli
     jmp $
-    iretq
+    
 inter_entry0:
     mov rsi, 0
     jmp _inter_entry

@@ -6,3 +6,4 @@ obj-y += spinlock.o
 obj-y += apic_interrupts.o
 obj-y += sched64.o
 obj-y += context.o
+obj-y += syscall.o

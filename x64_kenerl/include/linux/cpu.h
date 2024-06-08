@@ -3,6 +3,11 @@
 #include "linux/type.h"
 #include "linux/task64.h"
 
+#define IA32_MSR_EFER       0xC0000080
+#define IA32_MSR_STAR       0xc0000081
+#define IA32_MSR_LSTAR      0xC0000082  
+#define IA32_MSR_FMASK      0xc0000084
+
 typedef struct {
     uint64_t cpuid; //lapic id
     uint64_t esp0;  //内核态任务栈
