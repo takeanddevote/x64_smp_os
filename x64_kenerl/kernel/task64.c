@@ -78,7 +78,7 @@ task_t *get_next_ready_task()
         debug("cpu %d switch task %s.\n", get_lapic_id(),highPrioTask->name);
         highPrioTask->state = TASK_RUNNING;
     } else {
-        debug("cpu %d get no task.\n", get_lapic_id());
+        // debug("cpu %d get no task.\n", get_lapic_id());
     }
     // spin_unlock(&g_task.task_lock);
     return highPrioTask;

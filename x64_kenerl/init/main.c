@@ -6,22 +6,24 @@
 #include "linux/cpu.h"
 #include "linux/gdt64.h"
 #include "linux/syscall.h"
+#include "libs/unistd.h"
 
 void x64_user_main()
 {
-    asm volatile("syscall;");
+    int ret = write(1, 0x2, 3);
     while(1);
 }
 
 void x64_ap_main(void)
 {
     init_ap_idt(); //和bsp共享idt
-    init_tss_current_core(); //ap核初始化tss
     syscall_init(); //初始化syscall
     ap_local_apic_init(); //使能本地apic。
     lapic_timer_cycle_start(INTER_ID_LAPIC_TIMER, 5000000);
 
     kpcr_create();
+    init_tss_current_core(); //ap核初始化tss
+
     kpcr_swapgs();
     int cpuid = kpcr_get_offset(0);
     uint64_t stack = kpcr_get_offset(24);
