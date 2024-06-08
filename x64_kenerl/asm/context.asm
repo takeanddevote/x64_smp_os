@@ -1,7 +1,7 @@
 [SECTION .data]
 
-USER_X64_CODE_SECTOR    equ (5 << 3) | 0b011;
-USER_X64_DATA_SECTOR    equ (6 << 3) | 0b011;
+USER_X64_DATA_SECTOR    equ (5 << 3) | 0b011;
+USER_X64_CODE_SECTOR    equ (6 << 3) | 0b011;
 X64_TSS_SECTOR          equ (7 << 3) | 0b11;    //任务段选择子
 
 

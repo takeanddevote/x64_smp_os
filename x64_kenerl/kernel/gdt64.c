@@ -31,7 +31,7 @@ void init_tss_current_core()
 
     tss_t *tss = (tss_t *)kzalloc(sizeof(tss_t));
     tss->rsp0 = (uint64_t)kzalloc(PAGE_SIZE) + PAGE_SIZE;
-    debug("tss %p.\n", tss->rsp0);
+    // debug("tss %p.\n", tss->rsp0);
 
     tss_descriptor_t *desc = (tss_descriptor_t *)(g_gdtr->gdt_base_addr + g_gdtr->gdt_max_offset);
     build_x64_tss_desc((u64)tss, desc);

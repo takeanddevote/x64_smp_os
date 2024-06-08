@@ -28,6 +28,8 @@ extern void inter_entry16(void);
 extern void inter_entry17(void);
 extern void inter_entry18(void);
 extern void inter_entry19(void);
+extern void inter_entry20(void);
+extern void inter_entry21(void);
 
 static idtr_data_t g_idtr;
 static idt_item_t g_idtItems[256];
@@ -120,7 +122,12 @@ int init_idt(void)
             case 19:
                 handler = (u64)inter_entry19;
                 break;
-
+            case 20:
+                handler = (u64)inter_entry20;
+                break;
+            case 21:
+                handler = (u64)inter_entry21;
+                break;
 
             case INTER_ID_TIMER:
                 handler = (u64)clock_handler_entry;

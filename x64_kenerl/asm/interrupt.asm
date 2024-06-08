@@ -31,7 +31,7 @@ global clock_handler_entry
 clock_handler_entry:
     ; mov rdi, clock_interrupt_msg
     ; call printk
-    call clock_interrupt_handler
+    ; call clock_interrupt_handler
     iretq
 
 global inter_entry0
@@ -54,10 +54,12 @@ global inter_entry16
 global inter_entry17
 global inter_entry18
 global inter_entry19
+global inter_entry20
+global inter_entry21
 extern get_lapic_id
 extern handle_normal_errcode
 _inter_entry:
-    mov rdx, 13
+    mov rdx, rsi
     mov rsi, rsp
     mov rdi, [rsp]
     call handle_normal_errcode
@@ -106,14 +108,8 @@ inter_entry12:
     jmp _inter_entry
 
 inter_entry13:
-    mov rdx, 13
-    mov rsi, rsp
-    mov rdi, [rsp]
-    call handle_normal_errcode
-    
-    cli
-    jmp $
-    
+    mov rsi, 13
+    jmp _inter_entry
 
 extern handle_PF_errcode
 inter_entry14:
@@ -140,3 +136,16 @@ inter_entry18:
 inter_entry19:
     mov rsi, 19
     jmp _inter_entry
+inter_entry20:
+    mov rsi, 20
+    jmp _inter_entry
+
+extern handle_CP_errcode
+inter_entry21:
+    mov rdx, 21
+    mov rsi, rsp
+    mov rdi, [rsp]
+    call handle_CP_errcode
+
+    cli
+    jmp $

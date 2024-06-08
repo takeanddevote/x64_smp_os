@@ -55,10 +55,8 @@ SS.G := 1; (* 4-KByte granularity *)
 #include "linux/cpu.h"
 #include "logger.h"
 
-u32 KERNEL_X64_CODE_SECTOR = (3 << 3) | 0b00;
-u32 KERNEL_X64_DATA_SECTOR = (4 << 3) | 0b00;
-u32 USER_X64_CODE_SECTOR = (5 << 3) | 0b011;
-u32 USER_X64_DATA_SECTOR = (6 << 3) | 0b011;
+u32 SYSCALL_SELECTOR = (3 << 3) | 0b00;
+u32 SYSRET_SELECTOR = (4 << 3) | 0b011;
 
 extern void syscall_entry();
 int syscall_init()
@@ -76,8 +74,9 @@ int syscall_init()
 
     write_msr(IA32_MSR_LSTAR, (uint64_t)syscall_entry);
 
-    val = USER_X64_CODE_SECTOR << 48 | KERNEL_X64_CODE_SECTOR << 32; //syscall/sysexit以cs的下一个index作为ss。
-    // debug("IA32_MSR_STAR %x.\n", val);
+    /* 这里要加类型强转，不然结果不对，查看反汇编左移指令使用了32位寄存器，强转类型后才是64位寄存器 */
+    val = ((uint64_t)SYSRET_SELECTOR << 48) | ((uint64_t)SYSCALL_SELECTOR << 32); //syscall/sysexit以cs的下一个index作为ss。
+    // debug("IA32_MSR_STAR %x %x.\n", val >> 32, val);
     write_msr(IA32_MSR_STAR, val);
 
     val = 0x00047700; // 要求TF=IF=DF=AC=0；IOPL=00

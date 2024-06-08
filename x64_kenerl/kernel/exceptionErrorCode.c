@@ -97,7 +97,15 @@ void handle_PF_errcode(u32 error_code, u64 *stack, u64 id)
 
 void handle_CP_errcode(u32 error_code, u64 *stack, u64 id)
 {
+    CP_errCode *code = (CP_errCode *)&error_code;
     printk("\n####################### cpu %d : Control protection %d : code 0x%x #######################\n", get_lapic_id(), id, error_code);
+    if(code->CPEC == 1) printk("### CPEC 1: The #CP was caused by a near RET instruction.\n");
+    if(code->CPEC == 2) printk("### CPEC 2: The #CP was caused by a FAR RET or IRET instruction.\n");
+    if(code->CPEC == 3) printk("### CPEC 3: The #CP was due to missing ENDBRANCH at target of an indirect call or jump instruction.\n");
+    if(code->CPEC == 4) printk("### CPEC 4: The #CP was caused by a shadow-stack-restore token check failure in the RSTORSSP instruction.\n");
+    if(code->CPEC == 5) printk("### CPEC 5: The #CP was caused by a supervisor shadow stack token check failure in the SETSSBSY instruction.\n");
+    if(code->ENCL) printk("### ENCL 1: The #CP occurred during enclave execution.\n");
+
     printk("### stack dump %.8p: ", stack);
     print_hex_qword(stack, 6);
 }

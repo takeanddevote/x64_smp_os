@@ -18,8 +18,8 @@ u32 KERNEL_DATA_SECTOR = (2 << 3) | 0b00;    //内核态的代码段和数据段
 #ifdef CONFIG_ARCH_X64
 u32 KERNEL_X64_CODE_SECTOR = (3 << 3) | 0b00;
 u32 KERNEL_X64_DATA_SECTOR = (4 << 3) | 0b00;
-u32 USER_X64_CODE_SECTOR = (5 << 3) | 0b011;
-u32 USER_X64_DATA_SECTOR = (6 << 3) | 0b011;
+u32 USER_X64_DATA_SECTOR = (5 << 3) | 0b011;
+u32 USER_X64_CODE_SECTOR = (6 << 3) | 0b011;
 u32 X64_TSS_SECTOR = (7 << 3) | 0b11;    //任务段选择子
 #endif
 u32 USER_CODE_SECTOR = (3 << 3) | 0b11;
@@ -204,11 +204,12 @@ int gdt_init()
 
     g_gdtr->gdt_max_offset += 8;
     idx = (g_gdtr->gdt_max_offset / 8) - 1;
-    build_x64_r3_cs_desc(&g_gdt[idx]); //r3代码段描述符
+    build_x64_r3_ds_desc(&g_gdt[idx]); //r3数据段描述符
 
     g_gdtr->gdt_max_offset += 8;
     idx = (g_gdtr->gdt_max_offset / 8) - 1;
-    build_x64_r3_ds_desc(&g_gdt[idx]); //r3数据段描述符
+    build_x64_r3_cs_desc(&g_gdt[idx]); //r3代码段描述符
+
 
 #else
     /* 新增段描述符 */
