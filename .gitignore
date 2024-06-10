@@ -9,3 +9,5 @@ gdb-8.3/
 configs
 .config
 .config.old
+.cache/
+compile_commands.json

@@ -1,0 +1,3 @@
+[submodule "netstack/libpcap"]
+	path = netstack/libpcap
+	url = https://github.com/the-tcpdump-group/libpcap.git

@@ -9,13 +9,16 @@ CONFIG_SHELL := $(shell if [ -x "$$SHELL" ]; then echo $$SHELL; \
 
 -include $(srctree)/.config
 
-
+ifeq ($(CONFIG_ARCH_NETSTACK),y)
+include netstack.mk
+else
 include config.mk
-include $(srctree)/scripts/Kbuild.include
-
 # 顶层子目录
 obj-y += x86_kernel/
 # header-y := configs   #生成的配置头文件目录
+endif
+include $(srctree)/scripts/Kbuild.include
+
 
 buildSrcRoot ?= ./
 PHONY += buildSrc
@@ -47,7 +50,9 @@ PHONY += $(forCheckFilesExist)
 $(forCheckFilesExist):
 	$(call check_file_exist,$@)
 
-# 目标规则
+#####################################################################################################
+
+ifneq ($(or $(filter y,$(CONFIG_ARCH_X86)), $(filter y,$(CONFIG_ARCH_X64))),)
 all: scripts/link-firmware.sh $(KBUILD_SRC) boot loader
 	$(Q) ([ -e $(KBUILD_SRC)/$(HD_IMG_NAME) ] && rm -f $(KBUILD_SRC)/$(HD_IMG_NAME); true)
 	$(Q) $(MAKE) $(build) ./
@@ -122,8 +127,16 @@ endif
 
 bochs: all $(if $(filter X64,$(ARCH)),x64_kernel,)
 	bochs -q -f bochsrc
+endif
 
+#####################################################################################################
 
+ifeq ($(CONFIG_ARCH_NETSTACK),y)
+all: $(KBUILD_SRC) 
+	$(Q) $(MAKE) $(build) ./
+	$(Q) $(CC) $(LDFLAGS) -o $(KBUILD_SRC)/$(TARGET) $(KBUILD_SRC)/built-in.o $(LIBS) $(LIBPATH)
+	$(Q) echo "LD 	 built-in.o	"$(TARGET)
+endif
 
 
 PHONY += config old_config _config

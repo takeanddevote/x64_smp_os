@@ -15,10 +15,10 @@ INC :=
 
 # 包含当前目录的makefile，以及库
 include $(srctree)/scripts/Kbuild.include
-# include $(cfg_mk_file)
+include $(cfg_mk_file)
 include $(srctree)/.config
 include Makefile
-# include $(inc_file)
+include $(inc_file)
 
 
 ifdef HAL_INC

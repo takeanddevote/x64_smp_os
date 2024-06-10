@@ -10,7 +10,7 @@ clean-file ?= no
 prefix := SRC += 
 
 
-include $(srctree)/scripts/makefile/Kbuild.include
+include $(srctree)/scripts/Kbuild.include
 include $(cfg_mk_file)
 include Makefile
 
