@@ -61,11 +61,17 @@ include $(wildcard $(curdir-deps))
 # endif
 
 # 默认目标
-__build : $(subdir-n) $(CUR_OUT_PATH)/built-in.o
+__build : $(CUR_OUT_PATH)/built-in.o
 
 # 递归子目录
 $(subdir-n) :
 	$(Q) $(MAKE) -C $@ -f $(srctree)/scripts/Makefile.build
+
+# 如果 __build : $(subdir-n) $(CUR_OUT_PATH)/built-in.o 这样依赖，make认为两个依赖是独立的，因此创建2个线程分别处理，导致$(CUR_OUT_PATH)/built-in.o失败停止。
+# 但实际上 $(CUR_OUT_PATH)/built-in.o 依赖于 $(subdir-n) 生成的子目录built-in.o，因此我们需要建立$(CUR_OUT_PATH)/built-in.o 依赖于 $(subdir-b)
+# $(subdir-b) 依赖于 $(subdir-n) ，这样依赖链就是单线了。
+PHONY += $(subdir-b)
+$(subdir-b) : $(subdir-n) 
 
 # 处理当前目录的编译和链接: -r 链接成.o文件
 $(CUR_OUT_PATH)/built-in.o : $(curdir-o) $(subdir-b)

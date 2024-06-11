@@ -14,7 +14,7 @@
 #include <netinet/tcp.h>
 #include <netinet/ether.h>
 
-int main()
+int main() 
 {
     char errbuf[128];
     char *devie = pcap_lookupdev(errbuf);

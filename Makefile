@@ -138,6 +138,12 @@ all: $(KBUILD_SRC)
 	$(Q) echo "LD 	 built-in.o	"$(TARGET)
 endif
 
+PHONY += run
+run:
+	$(Q) echo && echo && echo "***********************run***********************"
+	$(Q) chmod u+x $(KBUILD_SRC)/$(TARGET)
+	$(Q) $(KBUILD_SRC)/$(TARGET)
+
 
 PHONY += config old_config _config
 _config: old_config_file := $(cfg_ini_old)
