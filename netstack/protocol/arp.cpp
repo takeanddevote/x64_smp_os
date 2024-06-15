@@ -49,7 +49,7 @@ arp_header* create_arp_header(inet_info_t *inet) {
     header->sender_ip = inet->local_ip;
 
     bzero(header->target_mac, ETHER_ADDR_LEN);
-    header->target_ip = inet->local_ip;
+    header->target_ip = inet->remote_ip;
 
     return header;
 }
@@ -90,7 +90,8 @@ int deal_arp_reply(inet_info_t *inet, const u_char *packet)
 {
     arp_header *arp = (arp_header *)(packet + sizeof(struct ether_header));
 
-    if(arp->sender_ip == inet->local_ip && arp->target_ip == inet->remote_ip    \
+    // print_arp(arp);
+    if(arp->sender_ip == inet->remote_ip && arp->target_ip == inet->local_ip    \
         /* && !memcpy(arp->sender_mac, inet->local_mac, ETHER_ADDR_LEN) */) {
         memcpy(inet->remote_mac, arp->target_mac, ETHER_ADDR_LEN);
         // print_arp(arp);

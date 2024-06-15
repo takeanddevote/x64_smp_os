@@ -113,7 +113,6 @@ int nst_post_by_name(const char *name)
 
     /* 检查线程是否在等待列表中。存在则广播 */
     if(curthread->wait_this.find(std::string(name)) != curthread->wait_this.end()) {
-        debugsit
         postthread = curthread->wait_this[std::string(name)];
         curthread->wait_this.erase(std::string(name));      /* 从队列中移除该线程 */
         postthread->be_posted = true;

@@ -24,9 +24,9 @@ void *icmp_req_handle(void *priv)
     // nst_create(&arp_thread, arp_request, &arp_thread); /* 创建线程发送arp请求，获取远端mac地址 */
 
     send_arp_req(&g_inet_info);     /* 发送arp请求包 */
-    // nst_wait(&monitor_thread);  /* 等待ARP回复 */
+    nst_wait_by_name("monitor_handle");  /* 等待ARP回复 */
 
-    print_inet_info();
+    // print_inet_info();
 
     unsigned char mac[] = {0x00, 0x0c, 0x29,0x31, 0x44, 0x6d};
     memcpy(g_inet_info.remote_mac, mac, ETH_ALEN);
@@ -47,7 +47,7 @@ static void packet_recv(u_char *user, const struct pcap_pkthdr *pkthdr, const u_
         case ETHERTYPE_ARP: /* arp reply */
             ret = deal_arp_reply(&g_inet_info, packet);
             if(!ret) {
-                nst_post(&monitor_thread);
+                nst_post_by_name("icmp_req_handle");
             }
             break;
         case ETHERTYPE_IP:
