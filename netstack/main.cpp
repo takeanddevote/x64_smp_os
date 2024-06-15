@@ -32,6 +32,17 @@ void performAction(const char *command, const char *message) {
     }
 }
 
+void *udp_recv_handle(void *priv)
+{
+    char data[MTU];
+    size_t len = 0;
+    while(1) {
+        len = udp_recv(&g_inet_info, data, MTU);
+        data[len+1] = '\0';
+        std::cout << "-------udp recv: " <<  data << std::endl;
+    }
+}
+
 int main()
 {
     char errbuf[PCAP_ERRBUF_SIZE];  /* 用于pacap错误时，返回错误信息 */
@@ -76,6 +87,7 @@ int main()
 
     nst_create(&monitor_thread, monitor_handle, "monitor_handle", &monitor_thread);
     nst_create(&icmp_req_thread, icmp_req_handle, "icmp_req_handle", &icmp_req_thread); /* icmp获取远端信息 */
+    nst_create(&udp_recv_thread, udp_recv_handle, "udp_recv_handle", &udp_recv_thread);
 
     char input[MAX_INPUT_SIZE];
     char command[10];    // 用于存储第一个参数

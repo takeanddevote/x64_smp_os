@@ -5,16 +5,19 @@
 #include "arp.h"
 #include "icmp.h"
 #include "ip.h"
+#include "udp.h"
 
 
 
 ns_thread_t icmp_req_thread;
 ns_thread_t monitor_thread;
+ns_thread_t udp_recv_thread;
 
 // void *arp_request(void *priv)
 // {
 //     /* 发送ARP请求包 */
 // }
+
 
 void *icmp_req_handle(void *priv)
 {
@@ -49,9 +52,6 @@ static void packet_recv(u_char *user, const struct pcap_pkthdr *pkthdr, const u_
             break;
         case ETHERTYPE_IP:
             ret = distribute_ip_reply(packet);
-            // if(ret) {
-            //     nst_post(&monitor_thread);
-            // }
             break;
 
         default:

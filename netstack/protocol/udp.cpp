@@ -1,9 +1,13 @@
 #include "udp.h"
 #include "protocol_cache.h"
+#include "thread.h"
 #include "util.h"
 #include "arp.h"
 #include "ip.h"
+#include <algorithm>
 #include <cstddef>
+#include <mutex>
+#include <netinet/in.h>
 
 uint16_t udp_checksum(pseudo_header *psh, udp_header *udph, uint16_t *data, int data_len) {
     int total_len = sizeof(pseudo_header) + sizeof(struct udp_header) + data_len;
@@ -68,7 +72,7 @@ udp_header* create_udp_header(inet_info_t *inet, void *data, size_t d_len)
 }
 
 
-void *udp_send(inet_info_t *inet, void *data, size_t len) 
+int udp_send(inet_info_t *inet, void *data, size_t len) 
 {
     // 等监控线程启动起来
     sleep(1);
@@ -95,10 +99,33 @@ void *udp_send(inet_info_t *inet, void *data, size_t len)
     int sent = pcap_sendpacket(inet->handle, packet, packet_len);
     if (sent < 0) {
         ERROR_PRINT("pcap_sendpacket failed: %s\n", pcap_geterr(inet->handle));
-        exit(-1);
+        return -1;
     } else {
         INFO_PRINT("[success] sent UDP package..\n");
     }
 
-    return NULL;
+    return len;
+}
+
+int distribute_udp_recv(struct udp_header *udp)
+{
+    char *data = ((char *)udp + sizeof(struct udp_header));
+    size_t datalen = ntohs(udp->length) - sizeof(struct udp_header);
+
+    std::lock_guard<std::mutex> lock(g_inet_info.datalock);
+    memcpy(g_inet_info.data, data, datalen);
+    g_inet_info.data_valid = datalen;
+
+    nst_post_by_name("udp_recv_handle");
+    return 0;
+}
+
+
+size_t udp_recv(inet_info_t *inet, void *data, size_t len)
+{
+    nst_wait_by_name("monitor_handle"); /* 阻塞等待数据 */
+
+    std::lock_guard<std::mutex> lock(inet->datalock);
+    memcpy(data, inet->data, std::min(inet->data_valid, len));
+    return std::min(inet->data_valid, len);
 }

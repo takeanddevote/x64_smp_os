@@ -31,8 +31,10 @@
 
 extern ns_thread_t icmp_req_thread;
 extern ns_thread_t monitor_thread;
+extern ns_thread_t udp_recv_thread;
 void *icmp_req_handle(void *priv);
 void *monitor_handle(void *priv);
+void *udp_recv_handle(void *priv);
 
 
 #endif /* __COMMON_H__ */

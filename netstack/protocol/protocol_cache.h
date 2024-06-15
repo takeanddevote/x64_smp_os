@@ -2,7 +2,9 @@
 #define __PROTOCOL_CACHE_H__
 #include "common.h"
 #include <cstddef>
+#include <mutex>
 extern "C" {
+#define MTU 1500
 
 typedef struct {
     char name[32];                      /* 网卡名字 */
@@ -17,6 +19,10 @@ typedef struct {
     size_t remote_port;                 /* 远端端口号 */
 
     bool ping_success;      /* 网络已经ping通了？ */
+
+    std::mutex datalock;
+    char data[MTU];
+    size_t data_valid;
 } inet_info_t;
 
 extern inet_info_t g_inet_info;

@@ -21,6 +21,9 @@ typedef struct udp_header {
     uint16_t checksum;      // 校验和
 } __attribute__((packed)) udp_header;
 
-void *udp_send(inet_info_t *inet, void *data, size_t len);
+int udp_send(inet_info_t *inet, void *data, size_t len);
+size_t udp_recv(inet_info_t *inet, void *data, size_t len);
+
+int distribute_udp_recv(struct udp_header *udp);
 
 #endif /* __UDP_H__ */

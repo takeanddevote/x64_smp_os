@@ -93,3 +93,10 @@ uint16_t ip_checksum(uint16_t *data, int length)
 
     return (uint16_t) ~sum;
 }
+
+char *nip_to_ascall(uint32_t ip)
+{
+    struct in_addr in_addr;
+    in_addr.s_addr = ip;
+    return inet_ntoa(in_addr);
+}
