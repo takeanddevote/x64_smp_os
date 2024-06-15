@@ -24,6 +24,7 @@ typedef struct {
     uint32_t   target_ip;
 } __attribute__((packed)) arp_header;
 
+struct ether_header* create_ether_header(u_char* dst_mac, u_char* src_mac, ushort type);
 void send_arp_req(inet_info_t *inet);
 int deal_arp_reply(inet_info_t *inet, const u_char *packet);
 void print_ether(const u_char *packet);

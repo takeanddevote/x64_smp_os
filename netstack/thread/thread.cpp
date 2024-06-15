@@ -16,11 +16,21 @@ int nst_wait(ns_thread_t *thread)
     pthread_mutex_unlock(&thread->mutex);
 }
 
+int nst_wait_by_name(const char *name)
+{
+
+}
+
 int nst_post(ns_thread_t *wait_this)
 {
     pthread_mutex_lock(&wait_this->mutex);
     pthread_cond_signal(&wait_this->cond);
     pthread_mutex_unlock(&wait_this->mutex);
+}
+
+int nst_post_by_name(const char *name)
+{
+    
 }
 
 int nst_destroy(ns_thread_t *thread)

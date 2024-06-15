@@ -73,3 +73,23 @@ int get_eth_mac(const char *name, void *mac)
 
     return 0;
 }
+
+uint16_t ip_checksum(uint16_t *data, int length) 
+{
+    uint32_t sum = 0;
+
+    while (length > 1) {
+        sum += *data++;
+        length -= 2;
+    }
+
+    if (length == 1) {
+        sum += *((uint8_t*) data);
+    }
+
+    while (sum >> 16) {
+        sum = (sum & 0xFFFF) + (sum >> 16);
+    }
+
+    return (uint16_t) ~sum;
+}

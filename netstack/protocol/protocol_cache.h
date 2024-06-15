@@ -11,6 +11,8 @@ typedef struct {
     u_int8_t remote_mac[ETH_ALEN];      /* 远端mac地址 */
     sa_family_t family;                 /* 协议族 */
     pcap_t *handle;                     /* pcap句柄 */
+
+    bool ping_success;      /* 网络能ping通 */
 } inet_info_t;
 
 extern inet_info_t g_inet_info;
