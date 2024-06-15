@@ -45,7 +45,7 @@ KBUILD_LDS :=
 CFLAGS := $(DEBUG)
 CFLAGS :=$(strip ${CFLAGS})
 
-CXXFLAGS := $(DEBUG)
+CXXFLAGS := $(DEBUG) -std=c++11
 CXXFLAGS :=$(strip ${CXXFLAGS})
 
 LDFLAGS := 

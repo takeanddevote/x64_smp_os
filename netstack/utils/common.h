@@ -27,6 +27,7 @@
 #include <thread.h>
 #include<net/ethernet.h>
 #include<socket.h>
+#include <pthread.h>
 
 extern ns_thread_t icmp_req_thread;
 extern ns_thread_t monitor_thread;

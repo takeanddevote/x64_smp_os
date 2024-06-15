@@ -21,8 +21,9 @@ gen_clang_json_file() {
 has_c_option="false"
 has_r_option="false"
 has_k_option="false"
+has_g_option="false"    # 启动gdbserver
 
-while getopts ":crk" opt; do
+while getopts ":crkg" opt; do
 	case $opt in
 		c)
 			has_c_option="true"
@@ -33,6 +34,9 @@ while getopts ":crk" opt; do
 			;;
 		r)
 			has_r_option="true"
+			;;
+		g)
+			has_g_option="true"
 			;;
 		\?)
 			echo "invalid option: -${OPTARG}" >&2
@@ -76,4 +80,10 @@ if [[ $has_r_option == "true" ]]; then
     echo "hlq" | sudo -S ls > /dev/null 2>&1  
     sudo make run
     sudo -K
+fi
+
+
+if [[ $has_g_option == "true" ]]; then
+    echo "hlq" | sudo -S ls > /dev/null 2>&1  
+    sudo gdbserver :1234 .build/netstack.elf 
 fi

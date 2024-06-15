@@ -32,7 +32,7 @@ void *icmp_req_handle(void *priv)
     memcpy(g_inet_info.remote_mac, mac, ETH_ALEN);
 
     send_icmp_echo_request_packet(&g_inet_info);    /* 发送icmp回显请求，测试连通性 */
-    nst_wait(&monitor_thread);                    /* 等待回显回复 */
+    nst_wait_by_name("monitor_handle");                    /* 等待回显回复 */
 
     std::cout << "ping " << (g_inet_info.ping_success ? "success" : "false") << std::endl;
 }
@@ -52,9 +52,9 @@ static void packet_recv(u_char *user, const struct pcap_pkthdr *pkthdr, const u_
             break;
         case ETHERTYPE_IP:
             ret = distribute_ip_reply(packet);
-            if(ret) {
-                nst_post(&monitor_thread);
-            }
+            // if(ret) {
+            //     nst_post(&monitor_thread);
+            // }
             break;
 
         default:
@@ -72,7 +72,7 @@ void *monitor_handle(void *priv)
         return NULL;
     }
     g_inet_info.handle = handle;
-    if(pcap_loop(handle, -1, packet_recv, NULL)) {  /* 开始抓包，无限次 */
+    if(pcap_loop(handle, -1, packet_recv, NULL)) {  /* 开始抓包，无限次; packet_recv 是当前线程回调的，而不是新创建一个线程 */
         fprintf(stderr, "pcap_loop failed: %s\n", pcap_geterr(handle));
     }
     pcap_close(handle);

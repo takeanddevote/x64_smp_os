@@ -61,9 +61,9 @@ int distribute_icmp_reply(icmp_header *icmp)
     int ret = 0;
     // printf("type %d.\n", icmp->type);
     switch(icmp->type) {
-        case ICMP_TYPE_REPLY_ECHO:
+        case ICMP_TYPE_REPLY_ECHO:  /* icmp回显回复，唤醒请求线程，即ping通了 */
             g_inet_info.ping_success = true;
-            ret = 1;
+            nst_post_by_name("icmp_req_handle");
             break;
         case ICMP_TYPE_REPLY_TS:
             break;

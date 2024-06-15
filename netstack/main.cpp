@@ -57,8 +57,8 @@ int main()
     g_inet_info.local_ip = get_inet_ip(g_inet_info.name, AF_INET);  /* 获取网卡ip地址 */
     get_eth_mac(g_inet_info.name, g_inet_info.local_mac);              /* 获取网卡mac地址 */
 
-    nst_create(&monitor_thread, monitor_handle, &monitor_thread); 
-    nst_create(&icmp_req_thread, icmp_req_handle, &icmp_req_thread); /* icmp获取远端信息 */
+    nst_create(&monitor_thread, monitor_handle, "monitor_handle", &monitor_thread);
+    nst_create(&icmp_req_thread, icmp_req_handle, "icmp_req_handle", &icmp_req_thread); /* icmp获取远端信息 */
 
     nst_destroy(&icmp_req_thread);
     nst_destroy(&monitor_thread);
