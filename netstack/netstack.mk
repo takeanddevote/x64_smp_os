@@ -9,7 +9,11 @@ MAKE := make $(MQ)
 Q	:= @
 
 # 调试
+ifeq ($(CONFIG_VERSION_DEBUG),y)
 DEBUG := -g
+else
+DEBUG :=
+endif
 
 srctree := $(shell pwd)
 
@@ -39,17 +43,19 @@ KBUILD_LDS :=
 
 # 配置编译参数
 CFLAGS := $(DEBUG)
-	
 CFLAGS :=$(strip ${CFLAGS})
+
+CXXFLAGS := $(DEBUG)
+CXXFLAGS :=$(strip ${CXXFLAGS})
 
 LDFLAGS := 
 
 ASFLAGS :=
 LIBPATH := -L$(shell pwd)/netstack/libs/lib -Wl,-rpath=$(shell pwd)/netstack/libs/lib
-LIBS := -lpcap 
+LIBS := -lpcap -lpthread -lstdc++
 
 export CC CPP CXX AS LD NM AR STRIP OBJCOPY OBJDUMP
-export CFLAGS LDFLAGS ASFLAGS LIBPATH LIBS
+export CFLAGS LDFLAGS ASFLAGS LIBPATH LIBS CXXFLAGS
 export MAKE Q srctree KBUILD_SRC KBUILD_LDS TARGET
 
 obj-y += netstack/

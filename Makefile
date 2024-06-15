@@ -10,7 +10,7 @@ CONFIG_SHELL := $(shell if [ -x "$$SHELL" ]; then echo $$SHELL; \
 -include $(srctree)/.config
 
 ifeq ($(CONFIG_ARCH_NETSTACK),y)
-include netstack.mk
+include netstack/netstack.mk
 else
 include config.mk
 # 顶层子目录

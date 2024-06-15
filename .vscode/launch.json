@@ -8,11 +8,23 @@
             "type": "gdb",
             "request": "attach",
             "name": "Attach to gdbserver",
-            "executable": "/home/ziya/CLionProjects/mycode/.build/vmlinux_x64",
+            "executable": "/home/ziya/CLionProjects/mycode/.build/netstack.elf",
             "target": "localhost:1234",
             "remote": true,
             "cwd": "${workspaceRoot}",
             "valuesFormatting": "parseText"
         }
     ]
+
+    // "configurations": [
+    //     {
+    //         "name": "netstack",
+    //         "type": "gdb",
+    //         "request": "launch",
+    //         "target": "/home/ziya/CLionProjects/mycode/.build/netstack.elf",
+    //         "cwd": "${workspaceRoot}",
+    //         "valuesFormatting": "parseText",
+    //         "gdbpath": "/usr/local/bin/sudo_gdb.sh"
+    //     }
+    // ]
 }
