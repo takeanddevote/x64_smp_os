@@ -29,7 +29,7 @@ void send_icmp_echo_request_packet(inet_info_t *inet) {
     struct ether_header* ether = create_ether_header(inet->remote_mac, inet->local_mac, ETHERTYPE_IP);
 
     // 承载icmp协议的ip协议
-    ip_header* ip = create_ip_protocol_header(&g_inet_info, IP_LOAD_ICMP);
+    ip_header* ip = create_ip_icmp_protocol_header(&g_inet_info, IP_LOAD_ICMP);
 
     // icmp协议，类型为8，即回显请求，测试连通性
     icmp_header* icmp = create_icmp_protocol_header(ICMP_TYPE_REQ_ECHO);

@@ -93,7 +93,7 @@ int deal_arp_reply(inet_info_t *inet, const u_char *packet)
     // print_arp(arp);
     if(arp->sender_ip == inet->remote_ip && arp->target_ip == inet->local_ip    \
         /* && !memcpy(arp->sender_mac, inet->local_mac, ETHER_ADDR_LEN) */) {
-        memcpy(inet->remote_mac, arp->target_mac, ETHER_ADDR_LEN);
+        memcpy(inet->remote_mac, arp->sender_mac, ETHER_ADDR_LEN);
         // print_arp(arp);
         return 0;
     }

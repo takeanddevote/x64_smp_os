@@ -1,6 +1,7 @@
 #ifndef __PROTOCOL_CACHE_H__
 #define __PROTOCOL_CACHE_H__
 #include "common.h"
+#include <cstddef>
 extern "C" {
 
 typedef struct {
@@ -12,7 +13,10 @@ typedef struct {
     sa_family_t family;                 /* 协议族 */
     pcap_t *handle;                     /* pcap句柄 */
 
-    bool ping_success;      /* 网络能ping通 */
+    size_t local_port;                  /* 本地端口号 */
+    size_t remote_port;                 /* 远端端口号 */
+
+    bool ping_success;      /* 网络已经ping通了？ */
 } inet_info_t;
 
 extern inet_info_t g_inet_info;

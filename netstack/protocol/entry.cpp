@@ -28,9 +28,6 @@ void *icmp_req_handle(void *priv)
 
     // print_inet_info();
 
-    unsigned char mac[] = {0x00, 0x0c, 0x29,0x31, 0x44, 0x6d};
-    memcpy(g_inet_info.remote_mac, mac, ETH_ALEN);
-
     send_icmp_echo_request_packet(&g_inet_info);    /* 发送icmp回显请求，测试连通性 */
     nst_wait_by_name("monitor_handle");                    /* 等待回显回复 */
 

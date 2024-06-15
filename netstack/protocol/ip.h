@@ -20,7 +20,9 @@ typedef struct {
 #define IP_LOAD_TCP     6
 #define IP_LOAD_UDP     17
 
-ip_header *create_ip_protocol_header(inet_info_t *inet, uint8_t protocol);
+ip_header *create_ip_icmp_protocol_header(inet_info_t *inet, uint8_t protocol);
 int distribute_ip_reply(const u_char *packet);
+ip_header* create_ip_header(uint8_t tos, uint16_t len, uint16_t identification, uint16_t flags, uint8_t ttl,
+                            uint8_t protocol, uint32_t src_ip, uint32_t dst_ip);
 
 #endif /* __IP_H__ */
