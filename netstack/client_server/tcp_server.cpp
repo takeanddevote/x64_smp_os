@@ -64,16 +64,19 @@ int main() {
         printf("Connection from %s:%d\n", client_ip, ntohs(client_addr.sin_port));
 
         // 读取客户端数据
-        ssize_t bytes_read = read(new_fd, buffer, BUFFER_SIZE);
-        if (bytes_read < 0) {
-            perror("Read failed");
-        } else {
-            buffer[bytes_read] = '\0'; // Null-terminate the string
-            printf("Received: %s\n", buffer);
+        while(1) {
+            ssize_t bytes_read = read(new_fd, buffer, BUFFER_SIZE);
+            if (bytes_read < 0) {
+                perror("Read failed");
+            } else {
+                buffer[bytes_read] = '\0'; // Null-terminate the string
+                printf("Received: %s\n", buffer);
+            }
+            write(new_fd, buffer, bytes_read);
         }
 
         // 关闭连接
-        close(new_fd);
+        // close(new_fd);
     }
 
     close(sockfd);

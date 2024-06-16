@@ -4,6 +4,7 @@
 #include "util.h"
 #include "udp.h"
 #include "tcp.h"
+#include <cstddef>
 
 
 ip_header* create_ip_icmp_protocol_header(inet_info_t *inet, uint8_t protocol) 
@@ -51,6 +52,7 @@ ip_header* create_ip_header(uint8_t tos, uint16_t len, uint16_t identification, 
 int distribute_ip_reply(const u_char *packet) /* 分发ip协议回复包 */
 {
     int ret = 0;
+    size_t tcplen;
     ip_header *ip = (ip_header *)(packet + sizeof(struct ether_header));
 
     // std::cout << "src ip " << nip_to_ascall(ip->src_ip) << " dst ip " << nip_to_ascall(ip->dst_ip) << std::endl;
@@ -64,7 +66,8 @@ int distribute_ip_reply(const u_char *packet) /* 分发ip协议回复包 */
             break;
 
         case IP_LOAD_TCP:
-            distribute_tcp_recv((tcp_header *)(packet + sizeof(struct ether_header) + sizeof(ip_header)));
+            tcplen = ntohs(ip->total_length) - sizeof(ip_header);
+            distribute_tcp_recv((tcp_header *)(packet + sizeof(struct ether_header) + sizeof(ip_header)), tcplen);
             break;
 
         case IP_LOAD_UDP:

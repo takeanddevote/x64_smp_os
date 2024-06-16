@@ -19,7 +19,7 @@ typedef struct tcp_header {
     uint16_t dest_port;       // 目的端口
     uint32_t sequence_num;    // 序列号。客户端各自生成自己的序列号
     uint32_t ack_num;         // 确认号。对方的序列号加上一个值。
-    uint8_t data_offset;      // 数据偏移，指示TCP头部的长度
+    uint8_t data_offset;      // 数据偏移，指示TCP头部的长度：高4位*4=数据起始偏移 低4位保留
     uint8_t flags;            // 标识TCP头部的不同标志 0 0 URG ACK PSH RST SYN FIN
     uint16_t window_size;     // 窗口大小
     uint16_t checksum;        // 校验和
@@ -29,6 +29,6 @@ typedef struct tcp_header {
 void tcp_init_seq(inet_info_t *inet);
 void tcp_send_control(inet_info_t *inet, uint8_t flag);
 void tcp_send(inet_info_t *inet, char *data, size_t d_len);
-int distribute_tcp_recv(struct tcp_header *tcp);
+int distribute_tcp_recv(struct tcp_header *tcp, size_t tcp_datalen);
 
 #endif /* __TCP_H__ */

@@ -87,7 +87,7 @@ void *tcp_connect_handle(void *priv)
 
     nst_wait_by_name("monitor_handle");               /* 等待服务端回复的第二次握手包，SYN+ACK */
     if(g_inet_info.tcp_status == TCP_HAND_2) {
-        printf("c.seq = %u c.ack = %u\n", g_inet_info.seq_num, g_inet_info.ack_num);
+        // printf("c.seq = %u c.ack = %u\n", g_inet_info.seq_num, g_inet_info.ack_num);
         tcp_send_control(&g_inet_info, TCP_ACK);     /* 第三次握手，发送ACK包 */
         g_inet_info.tcp_status = TCP_CONNECTED;
     }

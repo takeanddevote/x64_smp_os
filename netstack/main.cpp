@@ -9,6 +9,7 @@
 #include "tcp.h"
 #include <cstddef>
 #include <cstring>
+#include <unistd.h>
 
 #define INET_NAME       "ens38"
 #define REMOTE_IP       "192.168.133.138"
@@ -39,7 +40,9 @@ void performAction(const char *command, const char *message) {
             printf("tcp connected already...\n");
         }
     } else if(strcmp(command, "tcpsend") == 0) {
-
+        if(g_inet_info.tcp_status == TCP_CONNECTED) {
+            tcp_send(&g_inet_info, (char *)message, strlen(message));
+        }
     } else {
         printf("Unknown command: %s\n", command);
     }
@@ -58,6 +61,10 @@ void *udp_recv_handle(void *priv)
 
 void *tcp_data_recv_handle(void *priv)
 {
+    while(g_inet_info.tcp_status != TCP_CONNECTED) {
+        usleep(1000*50);
+    }
+
     // char data[MTU];
     // size_t len = 0;
     // while(1) {

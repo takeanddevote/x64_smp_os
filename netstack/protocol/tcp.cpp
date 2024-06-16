@@ -6,7 +6,9 @@
 #include "ip.h"
 #include "protocol_cache.h"
 #include "util.h"
+#include <cstddef>
 #include <cstdlib>
+#include <netinet/in.h>
 
 tcp_header* create_tcp_header(inet_info_t *inet, uint8_t flag, uint32_t seq_num, uint32_t ack_num, u_char* options, size_t options_len, char* s, size_t s_len) {
     pseudo_header *pseudo = (pseudo_header *)calloc(sizeof(pseudo_header), 1);
@@ -137,16 +139,24 @@ void tcp_send(inet_info_t *inet, char *data, size_t d_len)
 
 int distribute_tcp_ack(struct tcp_header *tcp)
 {
-    if(g_inet_info.tcp_status == TCP_CONNECTED) {
-        printf("tcp recv data: %s\n", ((char *)tcp + tcp->data_offset));
-        nst_wait_by_name("tcp_connect_handle");
-    }
+
 }
 
-
-int distribute_tcp_recv(struct tcp_header *tcp)
+int deal_tcp_data_recv(char *data, size_t len)
 {
-    print_hex_string((unsigned char *)tcp, sizeof(struct tcp_header), "tcp recv");
+    // print_hex_string((unsigned char *)data, len, "deal_tcp_data_recv");
+    data[len] = '\0';
+    if(g_inet_info.tcp_status == TCP_CONNECTED) {
+        printf("tcp recv data: %s\n", data);
+        nst_wait_by_name("tcp_data_recv_handle");
+    }
+    return 0;
+}
+
+int distribute_tcp_recv(struct tcp_header *tcp, size_t tcp_len)
+{
+    size_t datalen = 0;
+    print_hex_string((unsigned char *)tcp, tcp_len, "tcp recv");
     switch(tcp->flags) {
         case TCP_ACK:   
             distribute_tcp_ack(tcp);
@@ -163,5 +173,13 @@ int distribute_tcp_recv(struct tcp_header *tcp)
             }
             break;
         
+        case TCP_PSH_ACK:   /* 远端发数据 */
+            datalen = tcp_len - (tcp->data_offset >> 4)*4;
+            g_inet_info.seq_num += 1;
+            g_inet_info.ack_num = ntohl(tcp->sequence_num) + datalen;
+            // printf("data_offset = %d\n", );
+            deal_tcp_data_recv((char *)tcp + (tcp->data_offset >> 4)*4, datalen);
+            tcp_send_control(&g_inet_info, TCP_ACK);     /* 回复ACK */
+            break;
     }
 }
