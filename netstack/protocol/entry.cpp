@@ -6,12 +6,15 @@
 #include "icmp.h"
 #include "ip.h"
 #include "udp.h"
+#include "tcp.h"
 
 
 
 ns_thread_t icmp_req_thread;
 ns_thread_t monitor_thread;
 ns_thread_t udp_recv_thread;
+ns_thread_t tcp_data_recv_thread;
+ns_thread_t tcp_connect_thread;
 
 // void *arp_request(void *priv)
 // {
@@ -74,4 +77,20 @@ void *monitor_handle(void *priv)
     }
     pcap_close(handle);
     return NULL;
+}
+
+void *tcp_connect_handle(void *priv)
+{
+    printf("c.seq = %u c.ack = %u\n", g_inet_info.seq_num, g_inet_info.ack_num);
+    tcp_send_control(&g_inet_info, TCP_SYN);     /* 第一次握手，发送SYN包 */
+    g_inet_info.tcp_status = TCP_HAND_1;
+
+    nst_wait_by_name("monitor_handle");               /* 等待服务端回复的第二次握手包，SYN+ACK */
+    if(g_inet_info.tcp_status == TCP_HAND_2) {
+        printf("c.seq = %u c.ack = %u\n", g_inet_info.seq_num, g_inet_info.ack_num);
+        tcp_send_control(&g_inet_info, TCP_ACK);     /* 第三次握手，发送ACK包 */
+        g_inet_info.tcp_status = TCP_CONNECTED;
+    }
+
+    std::cout << "tcp status " << g_inet_info.tcp_status << std::endl;
 }

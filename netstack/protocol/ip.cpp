@@ -3,6 +3,7 @@
 #include "protocol_cache.h"
 #include "util.h"
 #include "udp.h"
+#include "tcp.h"
 
 
 ip_header* create_ip_icmp_protocol_header(inet_info_t *inet, uint8_t protocol) 
@@ -63,7 +64,7 @@ int distribute_ip_reply(const u_char *packet) /* 分发ip协议回复包 */
             break;
 
         case IP_LOAD_TCP:
-            
+            distribute_tcp_recv((tcp_header *)(packet + sizeof(struct ether_header) + sizeof(ip_header)));
             break;
 
         case IP_LOAD_UDP:

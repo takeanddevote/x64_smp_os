@@ -6,6 +6,7 @@
 #include "arp.h"
 #include "thread.h"
 #include "udp.h"
+#include "tcp.h"
 #include <cstddef>
 #include <cstring>
 
@@ -25,8 +26,20 @@ void handle_sigint(int sig) {
 void performAction(const char *command, const char *message) {
     if (strcmp(command, "udp") == 0) {
         udp_send(&g_inet_info, (void *)message, (size_t)strlen(message));
-    } else if(strcmp(command, "tcp") == 0) {
-        
+    } else if(strcmp(command, "tcpconect") == 0) {
+        if(g_inet_info.tcp_status != TCP_CONNECTED) {
+            nst_create(&tcp_connect_thread, tcp_connect_handle, "tcp_connect_handle", &tcp_connect_thread);
+            nst_destroy(&tcp_connect_thread);
+            if(g_inet_info.tcp_status != TCP_CONNECTED) {
+                tcp_init_seq(&g_inet_info);
+                return;
+            }
+            printf("tcp connected success...\n");
+        } else {
+            printf("tcp connected already...\n");
+        }
+    } else if(strcmp(command, "tcpsend") == 0) {
+
     } else {
         printf("Unknown command: %s\n", command);
     }
@@ -42,6 +55,20 @@ void *udp_recv_handle(void *priv)
         std::cout << "-------udp recv: " <<  data << std::endl;
     }
 }
+
+void *tcp_data_recv_handle(void *priv)
+{
+    // char data[MTU];
+    // size_t len = 0;
+    // while(1) {
+    //     len = udp_recv(&g_inet_info, data, MTU);
+    //     data[len+1] = '\0';
+    //     std::cout << "-------udp recv: " <<  data << std::endl;
+    // }
+    while(1);
+}
+
+
 
 int main()
 {
@@ -87,7 +114,17 @@ int main()
 
     nst_create(&monitor_thread, monitor_handle, "monitor_handle", &monitor_thread);
     nst_create(&icmp_req_thread, icmp_req_handle, "icmp_req_handle", &icmp_req_thread); /* icmp获取远端信息 */
+    
+    nst_destroy(&icmp_req_thread);
+    while(g_inet_info.ping_success == false) { /* 等待网络ping通了 */
+        usleep(1000*50);
+    }
+
     nst_create(&udp_recv_thread, udp_recv_handle, "udp_recv_handle", &udp_recv_thread);
+    nst_create(&tcp_data_recv_thread, tcp_data_recv_handle, "tcp_data_recv_handle", &tcp_data_recv_thread);
+
+    tcp_init_seq(&g_inet_info); /* 初始化tcp的seq和ack值 */
+
 
     char input[MAX_INPUT_SIZE];
     char command[10];    // 用于存储第一个参数
@@ -114,7 +151,5 @@ int main()
         // 根据输入执行相应操作
         performAction(command, message);
     }
-
-    nst_destroy(&icmp_req_thread);
     nst_destroy(&monitor_thread);
 }

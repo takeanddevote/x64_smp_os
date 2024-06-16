@@ -17,6 +17,9 @@ gen_clang_json_file() {
     return $ret
 }
 
+drop_rst() {
+    sudo iptables -A OUTPUT -p tcp --tcp-flags RST RST -s 192.168.133.140 -d 192.168.133.138 --dport 8080 -j DROP
+}
 
 has_c_option="false"
 has_r_option="false"
@@ -78,6 +81,7 @@ fi
 
 if [[ $has_r_option == "true" ]]; then
     echo "hlq" | sudo -S ls > /dev/null 2>&1  
+    $drop_rst
     sudo make run
     sudo -K
 fi
@@ -85,5 +89,6 @@ fi
 
 if [[ $has_g_option == "true" ]]; then
     echo "hlq" | sudo -S ls > /dev/null 2>&1  
+    $drop_rst
     sudo gdbserver :1234 .build/netstack.elf 
 fi
