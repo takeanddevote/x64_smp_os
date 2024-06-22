@@ -11,6 +11,8 @@ CONFIG_SHELL := $(shell if [ -x "$$SHELL" ]; then echo $$SHELL; \
 
 ifeq ($(CONFIG_ARCH_NETSTACK),y)
 include netstack/netstack.mk
+else ifeq ($(CONFIG_ARCH_NETFRAMEWORK),y)
+include netframework/netframework.mk
 else
 include config.mk
 # 顶层子目录
@@ -136,13 +138,32 @@ all: $(KBUILD_SRC)
 	$(Q) $(MAKE) $(build) ./
 	$(Q) $(CC) $(LDFLAGS) -o $(KBUILD_SRC)/$(TARGET) $(KBUILD_SRC)/built-in.o $(LIBS) $(LIBPATH)
 	$(Q) echo "LD 	 built-in.o	"$(TARGET)
-endif
 
 PHONY += run
 run:
 	$(Q) echo && echo && echo "***********************run***********************"
 	$(Q) chmod u+x $(KBUILD_SRC)/$(TARGET)
 	$(Q) $(KBUILD_SRC)/$(TARGET)
+
+endif
+
+
+
+#####################################################################################################
+ifeq ($(CONFIG_ARCH_NETFRAMEWORK),y)
+all: $(KBUILD_SRC) 
+	$(Q) $(MAKE) $(build) ./
+	$(Q) $(CC) $(LDFLAGS) -o $(KBUILD_SRC)/$(TARGET) $(KBUILD_SRC)/built-in.o $(LIBS) $(LIBPATH)
+	$(Q) echo "LD 	 built-in.o	"$(TARGET)
+
+PHONY += run
+run:
+	$(Q) echo && echo && echo "***********************run***********************"
+	$(Q) chmod u+x $(KBUILD_SRC)/$(TARGET)
+	$(Q) $(KBUILD_SRC)/$(TARGET)
+
+endif
+
 
 
 PHONY += config old_config _config
