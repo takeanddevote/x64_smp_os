@@ -27,7 +27,7 @@ int main() {
     server_addr.sin_port = htons(PORT);
     
     // 指定网卡的 IP 地址
-    const char *ip_address = "192.168.1.10"; // 替换为你要绑定的网卡 IP 地址
+    const char *ip_address = "192.168.133.140"; // 替换为你要绑定的网卡 IP 地址
     if (inet_pton(AF_INET, ip_address, &server_addr.sin_addr) <= 0) {
         perror("Invalid address");
         close(sockfd);

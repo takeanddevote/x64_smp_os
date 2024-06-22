@@ -80,15 +80,17 @@ if [ $? != 0 ]; then
 fi
 
 if [[ $has_r_option == "true" ]]; then
-    echo "hlq" | sudo -S ls > /dev/null 2>&1  
-    $drop_rst
-    sudo make run
-    sudo -K
+    # echo "hlq" | sudo -S ls > /dev/null 2>&1  
+    # $drop_rst
+    # sudo make run
+    # sudo -K
+    make run
 fi
 
 
 if [[ $has_g_option == "true" ]]; then
-    echo "hlq" | sudo -S ls > /dev/null 2>&1  
-    $drop_rst
-    sudo gdbserver :1234 .build/netstack.elf 
+    # echo "hlq" | sudo -S ls > /dev/null 2>&1  
+    # $drop_rst
+    # sudo gdbserver :1234 .build/netstack.elf 
+    gdbserver :1234 .build/netstack.elf 
 fi
